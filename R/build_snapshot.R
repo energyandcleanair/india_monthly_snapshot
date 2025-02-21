@@ -1,4 +1,5 @@
 
+#' @export
 build_snapshot <- function(
   focus_month = NULL,
   output_dir = "output",

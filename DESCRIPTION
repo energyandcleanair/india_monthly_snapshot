@@ -1,10 +1,12 @@
-Package: 
+Package: indiasnapshots
 Type: Package
-Title: 
-Version: 
-Authors@R: c()
-Maintainer: 
-Description: A R package to build monthly snapshots for India.
+Title: India monthly snapshots
+Version: 0.0.1
+Authors@R: c(
+    person("Centre for Research on Energy and Clean Air (CREA)", role = c("aut", "cph")),
+    person("Danny", "Hartono", email = "danny@energyandcleanair.org", role = c("aut", "cre")),
+    person("Panda", "Rushwood", email = "panda@energyandcleanair.org", role = "aut"))
+Description: An R package to build monthly snapshots for India.
 License: GPL 3.0
 Encoding: UTF-8
 LazyData: true
@@ -37,4 +39,4 @@ Imports:
 Remotes:
     energyandcleanair/creahelpers,
     energyandcleanair/rcrea
-RoxygenNote: 7.1.1
+RoxygenNote: 7.3.2
