@@ -1,6 +1,14 @@
 
-# Get the data
+build_snapshot <- function(
+  focus_month = NULL,
+  output_dir = "output",
+  month_subdir = NULL
+) {
 
-# Check the data
+  # Get the data
 
-# Generate the charts and CSVs
+  # Check the data
+
+  # Generate the charts and CSVs
+
+}
