@@ -3,8 +3,6 @@
 
 devtools::load_all(".", quiet = TRUE)
 
-india_monthly_snapshot::build_snapshot(
-  focus_month = "2025-01",
-  output_dir = "output",
-  month_subdir = "2025-01"
+indiasnapshots::build_snapshot(
+  output_dir = "output"
 )
