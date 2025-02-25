@@ -4,7 +4,7 @@ init_dirs <- function(month_subdir = NULL) {
   pkg.env.dirs$base <- "data"
   pkg.env.dirs$month <- file.path(pkg.env.dirs$base, month_subdir)
   pkg.env.dirs$cache <- file.path(pkg.env.dirs$month, "cache")
-  pkg.env.dirs$output <- file.path(pkg.env.dirs$month, "cache")
+  pkg.env.dirs$output <- file.path(pkg.env.dirs$month, "output")
   pkg.env.dirs$diag <- file.path(pkg.env.dirs$month, "diagnostics")
 
   for (dir_name in names(pkg.env.dirs)) {
