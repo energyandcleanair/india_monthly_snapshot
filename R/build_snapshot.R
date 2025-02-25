@@ -1,5 +1,7 @@
 
 #' @importFrom glue glue
+#' @importFrom magrittr %>%
+#' @importFrom dplyr mutate
 #' @export
 build_snapshot <- function(
     focus_month = NULL,
@@ -31,13 +33,32 @@ build_snapshot <- function(
   init_dirs(format(focus_month, "%Y-%m"))
 
   focus_month_start <- lubridate::floor_date(focus_month, "month")
-  focus_month_end <- lubridate::ceiling_date(focus_month, "month")
+  focus_month_end <- lubridate::ceiling_date(focus_month, "month") - lubridate::day(1)
+
+  previous_month_start <- lubridate::floor_date(focus_month_start - lubridate::day(1), "month")
 
   # Get the data
   measurements <- fetch_measurements_for_india(
     start_date = focus_month_start,
     end_date = focus_month_end
   )
+
+  clean_stations <- function(stations) {
+    stations %>%
+      mutate(infos = gsub("'", "\"", infos)) %>%
+      mutate(infos = gsub("None", "null", infos)) %>%
+      mutate(infos = ifelse(is.na(infos), "{}", infos)) %>%
+      mutate(infos = lapply(infos, jsonlite::fromJSON)) %>%
+      tidyr::unnest_wider(infos)
+  }
+
+  stations <- fetch_current_stations_for_india() %>%
+    clean_stations()
+
+  stations_previous <- fetch_previous_stations_for_india(
+    year_month = format(previous_month_start, "%Y-%m")
+  ) %>%
+    clean_stations()
 
   # Check the data
 
