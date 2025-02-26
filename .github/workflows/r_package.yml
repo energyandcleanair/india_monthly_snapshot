@@ -35,6 +35,8 @@ jobs:
         Rscript -e 'install.packages(c("remotes", "devtools"))'
 
     - name: Install R package dependencies
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         Rscript -e 'remotes::install_deps(dependencies = TRUE)'
 
