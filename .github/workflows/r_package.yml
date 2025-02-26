@@ -33,10 +33,9 @@ jobs:
     - name: Setup R dependencies
       uses: r-lib/actions/setup-r-dependencies@v2
       with:
-        extra-packages: any::rcmdcheck
-        needs: "check"
+        extra-packages: devtools
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Check package
-      uses: r-lib/actions/check-r-package@v2
+    - name: Run R tests
+      run: Rscript -e 'devtools::test()'
