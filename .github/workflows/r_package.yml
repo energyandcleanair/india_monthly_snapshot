@@ -29,6 +29,10 @@ jobs:
         key: ${{ runner.os }}-r-${{ hashFiles('**/DESCRIPTION') }}
         restore-keys: |
           ${{ runner.os }}-r-
+    
+    - name: Install global R dependencies
+      run: |
+        Rscript -e 'install.packages(c("remotes", "devtools"))'
 
     - name: Install R package dependencies
       run: |
