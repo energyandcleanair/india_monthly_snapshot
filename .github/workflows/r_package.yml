@@ -29,17 +29,14 @@ jobs:
         key: ${{ runner.os }}-r-${{ hashFiles('**/DESCRIPTION') }}
         restore-keys: |
           ${{ runner.os }}-r-
-    
-    - name: Install global R dependencies
-      run: |
-        Rscript -e 'install.packages(c("remotes", "devtools"))'
 
-    - name: Install R package dependencies
+    - name: Setup R dependencies
+      uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        extra-packages: any::rcmdcheck
+        needs: "check"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        Rscript -e 'remotes::install_deps(dependencies = TRUE)'
 
     - name: Check package
-      run: |
-        Rscript -e 'devtools::check()'
+      uses: r-lib/actions/check-r-package@v2
