@@ -38,4 +38,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run R tests
-      run: Rscript -e 'devtools::test()'
+      run: Rscript -e 'testthat::test_local(".", stop_on_failure = TRUE)'
