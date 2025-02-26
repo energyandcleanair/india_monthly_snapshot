@@ -22,17 +22,10 @@ jobs:
         use-public-rspm: true
         r-version: '4.1.0'
 
-    - name: Cache R packages
-      uses: actions/cache@v2
-      with:
-        path: ${{ runner.tool_cache }}/R
-        key: ${{ runner.os }}-r-${{ hashFiles('**/DESCRIPTION') }}
-        restore-keys: |
-          ${{ runner.os }}-r-
-
     - name: Setup R dependencies
       uses: r-lib/actions/setup-r-dependencies@v2
       with:
+        cache: true
         extra-packages: devtools
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
