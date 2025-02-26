@@ -58,7 +58,7 @@ stations_all_live <- list(
     id = c("1", "2", "3"),
     name = c("Station 1", "Station 2", "Station 3"),
     city_id = c("1", "2", "3"),
-    latest_data = as.Date(c(yesterday, yesterday, yesterday)),
+    latest_data = c(yesterday, yesterday, yesterday),
     status = c("Live", "Live", "Live")
   ),
   history = dplyr::bind_rows(
@@ -88,7 +88,7 @@ stations_one_inactive <- list(
     id = c("1", "2", "3"),
     name = c("Station 1", "Station 2", "Station 3"),
     city_id = c("1", "2", "3"),
-    latest_data = as.Date(c(one_week_ago, yesterday, yesterday)),
+    latest_data = c(one_week_ago, yesterday, yesterday),
     status = c("Inactive", "Live", "Live")
   ),
   history = dplyr::bind_rows(
@@ -103,7 +103,7 @@ stations_one_na_details <- list(
     id = c("1", "2", "3"),
     name = c("Station 1", "Station 2", "Station 3"),
     city_id = c("1", "2", "3"),
-    latest_data = as.Date(c(NA, yesterday, yesterday)),
+    latest_data = c(NA, yesterday, yesterday),
     status = c(NA, "Live", "Live")
   ),
   history = dplyr::bind_rows(
@@ -117,7 +117,7 @@ stations_one_no_record_at_all <- list(
     id = c("2", "3"),
     name = c("Station 2", "Station 3"),
     city_id = c("2", "3"),
-    latest_data = as.Date(c(yesterday, yesterday)),
+    latest_data = c(yesterday, yesterday),
     status = c("Live", "Live")
   ),
   history = dplyr::bind_rows(
