@@ -485,7 +485,7 @@ describe("get_statuses_of_stations", {
         })
       })
       describe("new status \"Inactive\"", {
-        it("should return \"Removed in a previous month\"", {
+        it("should return \"No change\"", {
           diff <- indiasnapshots:::get_statuses_of_stations(
             old_stations = stations_one_no_record_at_all$stations,
             new_stations = stations_one_inactive$stations,
@@ -494,13 +494,13 @@ describe("get_statuses_of_stations", {
           )
 
           expected_stations <- stations_one_inactive$stations %>%
-            mutate(change = case_when(id == "1" ~ "Removed in a previous month", TRUE ~ "No change"))
+            mutate(change = case_when(id == "1" ~ "No change", TRUE ~ "No change"))
 
           expect_change_equal(expected_stations, diff)
         })
       })
       describe("new status \"NA details\"", {
-        it("should return \"Removed in a previous month\"", {
+        it("should return \"No change\"", {
           # Mock lubridate::today() to return a fixed date
           stub(indiasnapshots:::get_statuses_of_stations, "lubridate::today", today)
 
@@ -512,7 +512,7 @@ describe("get_statuses_of_stations", {
           )
 
           expected_stations <- stations_one_na_details$stations %>%
-            mutate(change = case_when(id == "1" ~ "Removed in a previous month", TRUE ~ "No change"))
+            mutate(change = case_when(id == "1" ~ "No change", TRUE ~ "No change"))
 
           expect_change_equal(expected_stations, diff)
         })

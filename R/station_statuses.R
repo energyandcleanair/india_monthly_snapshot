@@ -28,17 +28,25 @@ get_statuses_of_stations <- function(..., old_stations, new_stations, history, m
       status_new,
     ) %>%
     mutate(
+      # These are a couple of helper variables to make the statements easier to read
       status_old = stringr::str_to_lower(status_old),
       status_new = stringr::str_to_lower(status_new),
-      is_new = is.na(exists_old) & (status_new %in% active_statuses),
-      no_change = status_old %in% active_statuses &
-        status_new %in% active_statuses,
-      reactivated = (is.na(status_old) | status_old == "inactive") &
-        status_new %in% active_statuses,
-      removed_this_month = status_old %in% active_statuses &
-        (is.na(status_new) | status_new == "inactive"),
-      removed_previous_month = (status_old == "inactive" | is.na(status_old) | !exists_old) &
-        (is.na(status_new) | status_new == "inactive"),
+      missing_status_old = is.na(status_old),
+      missing_status_new = is.na(status_new),
+      # Booleans for the status of the station old and now
+      exists_old = !is.na(exists_old),
+      exists_new = !is.na(exists_new),
+      old_active = status_old %in% active_statuses,
+      new_active = status_new %in% active_statuses,
+      old_inactive = missing_status_old | status_old == "inactive",
+      new_inactive = missing_status_new | status_new == "inactive",
+      # Change type (as a boolean for each)
+      is_new = !exists_old & new_active,
+      no_change = (old_active & new_active) | (!exists_old & new_inactive),
+      reactivated = old_inactive & new_active,
+      removed_this_month = old_active & new_inactive,
+      removed_previous_month = old_inactive & new_inactive,
+      # Change type to text in a single column
       change = case_when(
         is_new ~ "New",
         no_change ~ "No change",
