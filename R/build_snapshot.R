@@ -49,6 +49,8 @@ build_snapshot <- function(
     end_date = focus_month_end
   )
 
+  location_presets <- fetch_location_presets_for_india()
+
   clean_stations <- function(stations) {
     stations %>%
       mutate(infos = gsub("'", "\"", infos)) %>%
