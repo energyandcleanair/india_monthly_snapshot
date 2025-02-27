@@ -532,7 +532,7 @@ describe("get_statuses_of_stations", {
       expected_stations <- stations_with_various_percentage_history$stations %>%
         mutate(percent_complete = case_when(
           id == "1" ~ 0.0,
-          id == "2" ~ 0.741935483871, # 23 days out of 31, smallest number of days < 75%
+          id == "2" ~ 0.7419, # 23 days out of 31, smallest number of days < 75%
           id == "3" ~ 1.0
         )) %>%
         mutate(percent_category = case_when(
