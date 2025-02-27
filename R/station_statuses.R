@@ -1,8 +1,12 @@
 #' @importFrom dplyr full_join
+#' @importFrom dplyr left_join
 #' @importFrom dplyr join_by
 #' @importFrom dplyr select
 #' @importFrom dplyr case_when
-get_statuses_of_stations <- function(..., old_stations, new_stations, history) {
+#' @importFrom dplyr summarise
+#' @importFrom dplyr group_by
+#' @importFrom dplyr n
+get_statuses_of_stations <- function(..., old_stations, new_stations, history, month) {
   active_statuses <- c("live", "delay")
 
   status <- full_join(
@@ -53,5 +57,26 @@ get_statuses_of_stations <- function(..., old_stations, new_stations, history) {
       change
     )
 
-  return(status)
+  percentages <- history %>%
+    group_by(id) %>%
+    summarise(
+      percent_complete = n() / as.numeric(lubridate::days_in_month(month))
+    ) %>%
+    mutate(
+      percent_category = case_when(
+        percent_complete < 0.01 ~ "No data",
+        percent_complete < 0.8 ~ "<80% data",
+        percent_complete >= 0.8 ~ ">80% data",
+        TRUE ~ "Unknown"
+      )
+    )
+
+  results <- status %>%
+    left_join(percentages, by = "id") %>%
+    mutate(
+      percent_complete = ifelse(is.na(percent_complete), 0, percent_complete),
+      percent_category = ifelse(is.na(percent_category), "No data", percent_category)
+    )
+
+  return(results)
 }
