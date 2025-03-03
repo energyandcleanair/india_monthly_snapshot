@@ -36,7 +36,8 @@ Imports:
     openxlsx,
     glue,
     sysfonts,
-    showtext
+    showtext,
+    logger
 Remotes:
     energyandcleanair/creahelpers,
     energyandcleanair/rcrea
