@@ -9,6 +9,7 @@
 get_statuses_of_stations <- function(..., old_stations, new_stations, history, month) {
   active_statuses <- c("live", "delay")
 
+  log_debug("Calculating station changes")
   status <- full_join(
     old_stations %>% mutate(exists = TRUE),
     new_stations %>% mutate(exists = TRUE),
@@ -65,8 +66,9 @@ get_statuses_of_stations <- function(..., old_stations, new_stations, history, m
       change
     )
 
+  log_debug("Calculating station data completeness")
   percentages <- history %>%
-    group_by(id) %>%
+    group_by(location_id) %>%
     summarise(
       percent_complete = n() / as.numeric(lubridate::days_in_month(month))
     ) %>%
@@ -77,8 +79,15 @@ get_statuses_of_stations <- function(..., old_stations, new_stations, history, m
         percent_complete >= 0.8 ~ ">80% data",
         TRUE ~ "Unknown"
       )
+    ) %>%
+    select(
+      id = location_id,
+      percent_complete,
+      percent_category
     )
 
+
+  log_debug("Joining station statuses and data completeness")
   results <- status %>%
     left_join(percentages, by = "id") %>%
     mutate(

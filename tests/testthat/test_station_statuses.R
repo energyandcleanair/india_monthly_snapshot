@@ -23,13 +23,13 @@ station_history_builder <- function(
 
   if (length(dates) == 0) {
     return(tibble::tibble(
-      id = character(),
+      location_id = character(),
       date = Sys.Date(),
       value = numeric()
     ))
   } else {
     tibble::tibble(
-      id = id,
+      location_id = id,
       date = dates,
       value = 100
     )
@@ -37,7 +37,7 @@ station_history_builder <- function(
 }
 
 no_history <- tibble::tibble(
-  id = character(),
+  location_id = character(),
   date = Sys.Date(),
   value = numeric()
 )
