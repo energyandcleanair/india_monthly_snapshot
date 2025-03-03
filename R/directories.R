@@ -14,6 +14,11 @@ init_dirs <- function(month_subdir = NULL) {
     }
   }
 
+  for (dir_name in names(pkg.env.dirs)) {
+    dir_path <- get(dir_name, envir = pkg.env.dirs)
+    log_debug(paste("Initialised directory:", dir_name, "with path:", dir_path))
+  }
+
   lockEnvironment(pkg.env.dirs)
 }
 
