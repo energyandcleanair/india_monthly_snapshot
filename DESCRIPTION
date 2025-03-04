@@ -37,7 +37,8 @@ Imports:
     glue,
     sysfonts,
     showtext,
-    logger
+    logger,
+    R6
 Remotes:
     energyandcleanair/creahelpers,
     energyandcleanair/rcrea
