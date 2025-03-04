@@ -156,6 +156,9 @@ build_snapshot <- function(
 
   # Generate the charts and CSVs
 
+
+  # Write the warnings to a CSV
+  log_info("Writing warnings to CSV")
   write.csv(
     warnings$get_warnings(),
     file.path(get_dir("output"), "warnings.csv"),
