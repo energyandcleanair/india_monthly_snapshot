@@ -129,17 +129,14 @@ build_snapshot <- function(
   })
 
   # You can add warnings to the warnings tibble to be written to the CSV at the end
-  warnings <- tibble::tibble(
-    type = character(),
-    message = character()
-  )
+  warnings <- Warnings$new()
 
   # Check the data
   log_info("Checking data")
   days_in_month <- focus_month_end - focus_month_start + 1
   day_threshold <- day_threshold_percent * days_in_month
 
-  warnings <- check_data(
+  check_data(
     warnings = warnings,
     measurements = measurements_raw,
     location_presets = location_presets,
@@ -158,4 +155,10 @@ build_snapshot <- function(
 
 
   # Generate the charts and CSVs
+
+  write.csv(
+    warnings$get_warnings(),
+    file.path(get_dir("output"), "warnings.csv"),
+    row.names = FALSE
+  )
 }

@@ -11,12 +11,13 @@
 #' @importFrom dplyr pull
 #' @importFrom dplyr n_distinct
 check_data <- function(
-    ...,
-    warnings,
-    measurements,
-    location_presets,
-    day_threshold,
-    focus_month) {
+  ...,
+  warnings,
+  measurements,
+  location_presets,
+  day_threshold,
+  focus_month
+) {
   log_debug("Checking number of cities doesn't exceed the limit")
   check_data.city_limits(
     measurements = measurements,
@@ -25,24 +26,23 @@ check_data <- function(
   )
 
   log_debug("Checking winter PM2.5 upper limits")
-  warnings <- check_data.winter_pm25(
-    measurements = measurements,
+  check_data.winter_pm25(
     warnings = warnings,
+    measurements = measurements,
     focus_month = focus_month
   )
 
   log_debug("Checking if southern cities are in the top 10")
-  warnings <- check_data.top_10_cities(
-    measurements = measurements,
-    warnings = warnings
+  check_data.top_10_cities(
+    warnings = warnings,
+    measurements = measurements
   )
 
   log_debug("Checking for low PM2.5 values")
-  warnings <- check_data.values_low(
-    measurements = measurements,
-    warnings = warnings
+  check_data.values_low(
+    warnings = warnings,
+    measurements = measurements
   )
-  return(warnings)
 }
 
 check_data.city_limits <- function(..., measurements, location_presets, day_threshold) {
@@ -84,33 +84,28 @@ check_data.winter_pm25 <- function(..., measurements, warnings, focus_month) {
       high_pm25_cities <- average_pm25 %>%
         filter(average_pm25 > 100)
 
-      warnings <- warnings %>%
-        bind_rows(
-          high_pm25_cities %>%
-            mutate(
-              type = "high_pm25_gt100",
-              message = glue("City {city_id} has an average PM2.5 concentration above 100 µg/m³: {average_pm25}")
-            ) %>%
-            select(type, message)
-        )
+      warnings$add_warnings(
+        high_pm25_cities %>%
+          mutate(
+            type = "high_pm25_gt100",
+            message = glue("City {city_id} has an average PM2.5 concentration above 100 µg/m³: {average_pm25}")
+          )
+      )
     }
 
     if (any(average_pm25$average_pm25 > 200)) {
       very_high_pm25_cities <- average_pm25 %>%
         filter(average_pm25 > 200)
 
-      warnings <- warnings %>%
-        bind_rows(
-          very_high_pm25_cities %>%
-            mutate(
-              type = "high_pm25_gt200",
-              message = glue("City {city_id} has an average PM2.5 concentration above 200 µg/m³: {average_pm25}")
-            ) %>%
-            select(type, message)
+      warnings$add_warnings(
+        very_high_pm25_cities %>%
+          mutate(
+            type = "high_pm25_gt200",
+            message = glue("City {city_id} has an average PM2.5 concentration above 200 µg/m³: {average_pm25}")
+          )
         )
     }
   }
-  return(warnings)
 }
 
 check_data.top_10_cities <- function(..., measurements, warnings) {
@@ -121,20 +116,17 @@ check_data.top_10_cities <- function(..., measurements, warnings) {
     ) %>%
     arrange(desc(average_pm25)) %>%
     head(10)
-
+  
   if (any(top_10_cities$gadm1_id %in% names(south_india_states))) {
-    warnings <- warnings %>%
-      bind_rows(
-        top_10_cities %>%
-          filter(gadm1_id %in% names(south_india_states)) %>%
-          mutate(
-            type = "southern_city_in_top_10",
-            message = glue("City {city_name} is in the top 10")
-          ) %>%
-          select(type, message)
-      )
+    warnings$add_warnings(
+      top_10_cities %>%
+        filter(gadm1_id %in% names(south_india_states)) %>%
+        mutate(
+          type = "southern_city_in_top_10",
+          message = glue("City {city_name} is in the top 10")
+        )
+    )
   }
-  return(warnings)
 }
 
 check_data.values_low <- function(..., measurements, warnings) {
@@ -142,30 +134,26 @@ check_data.values_low <- function(..., measurements, warnings) {
     filter(value < low_value_threshold)
 
   if (nrow(low_value_measurements) > 0) {
-    warnings <- warnings %>%
-      bind_rows(
-        low_value_measurements %>%
-          mutate(
-            type = "low_value_lt5",
-            message = glue("City {city_id} on {date} has a value less than 5: {value}")
-          ) %>%
-          select(type, message)
-      )
+    warnings$add_warnings(
+      low_value_measurements %>%
+        mutate(
+          type = "low_value_lt5",
+          message = glue("City {city_id} on {date} has a value less than 5: {value}")
+        )
+    )
   }
 
   moderate_value_measurements <- measurements %>%
     filter(value >= low_value_threshold & value < moderate_value_threshold)
 
   if (nrow(moderate_value_measurements) > 0) {
-    warnings <- warnings %>%
-      bind_rows(
-        moderate_value_measurements %>%
-          mutate(
-            type = "low_value_lt10",
-            message = glue("City {city_id} on {date} has a value between 5 and 10: {value}")
-          ) %>%
-          select(type, message)
-      )
+    warnings <- warnings$add_warnings(
+      moderate_value_measurements %>%
+        mutate(
+          type = "low_value_lt10",
+          message = glue("City {city_id} on {date} has a value between 5 and 10: {value}")
+        )
+    )
   }
 
   return(warnings)
