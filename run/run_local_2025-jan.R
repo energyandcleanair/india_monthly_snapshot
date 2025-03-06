@@ -5,5 +5,5 @@ devtools::load_all(".", quiet = TRUE)
 
 indiasnapshots::build_snapshot(
   focus_month = "2025-01-01",
-  output_dir = "output"
+  output_dir = "data"
 )

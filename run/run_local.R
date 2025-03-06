@@ -4,5 +4,5 @@
 devtools::load_all(".", quiet = TRUE)
 
 indiasnapshots::build_snapshot(
-  output_dir = "output"
+  output_dir = "data"
 )
