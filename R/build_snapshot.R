@@ -21,7 +21,7 @@ log_threshold(DEBUG)
 #' @export
 build_snapshot <- function(
     focus_month = NULL,
-    output_dir = "output") {
+    output_dir = "data") {
   log_info("Initialsing arguments")
   focus_month <- local({
     if (!is.null(focus_month)) {
@@ -49,7 +49,10 @@ build_snapshot <- function(
   })
   log_info("Focus month is {focus_month}")
 
-  init_dirs(format(focus_month, "%Y-%m"))
+  init_dirs(
+    output_dir = output_dir,
+    month_subdir = format(focus_month, "%Y-%m")
+  )
 
   focus_month_start <- lubridate::floor_date(focus_month, "month")
   focus_month_end <- lubridate::ceiling_date(focus_month, "month") - lubridate::day(1)
