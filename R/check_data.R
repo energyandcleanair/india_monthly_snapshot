@@ -14,6 +14,7 @@ check_data <- function(
   ...,
   warnings,
   measurements,
+  station_measurements,
   location_presets,
   day_threshold,
   focus_month
@@ -42,6 +43,11 @@ check_data <- function(
   check_data.values_low(
     warnings = warnings,
     measurements = measurements
+  )
+
+  log_debug("Checking for duplicate station daily entries")
+  check_data.duplicate_entries(
+    station_measurements = station_measurements
   )
 }
 
@@ -157,4 +163,14 @@ check_data.values_low <- function(..., measurements, warnings) {
   }
 
   return(warnings)
+}
+
+check_data.duplicate_entries <- function(..., station_measurements) {
+  duplicate_entries <- station_measurements %>%
+    group_by(location_id, date) %>%
+    filter(n() > 1)
+
+  if (nrow(duplicate_entries) > 0) {
+    stop(glue("Duplicate entries found for the following locations and dates: {paste(duplicate_entries$location_id, duplicate_entries$date, sep = ' on ', collapse = ', ')}"))
+  }
 }

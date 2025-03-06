@@ -139,6 +139,7 @@ build_snapshot <- function(
   check_data(
     warnings = warnings,
     measurements = measurements_raw,
+    station_measurements = station_measurements,
     location_presets = location_presets,
     day_threshold = day_threshold,
     focus_month = focus_month
