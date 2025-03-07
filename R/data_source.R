@@ -58,3 +58,9 @@ fetch_location_presets_for_india <- function(year_month, ..., use_cache = TRUE) 
   cache_file <- file.path(get_dir("cache"), "location_presets.csv")
   return(fetch_data(url, cache_file, use_cache))
 }
+
+fetch_cities_for_india <- function(){
+  url <- 'https://api.energyandcleanair.org/cities?country=IN&format=csv'
+  cache_file <- file.path(get_dir("cache"), "cities.csv")
+  return(fetch_data(url, cache_file))
+}
