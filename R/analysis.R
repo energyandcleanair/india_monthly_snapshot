@@ -6,11 +6,11 @@ measurements_preset_ncap <- measurements %>%
          pass_who = value <= who_pm25_standard,
          pass_naaqs = value <= naaqs_pm25_standard,
          pass_naaqs2 = value <= 2 * naaqs_pm25_standard,
-         grap_cat = cut(mean, breaks = c(0, unlist(unname(scales_pm25))),
+         grap_cat = cut(value, breaks = c(0, unlist(unname(scales_pm25))),
                         labels = names(scales_pm25)))
 
 measurements_preset_ncap_summary <- measurements_preset_ncap %>%
-  group_by(location_id, pollutant, pollutant_name, name, gadm1_name) %>%
+  group_by(location_id, city_name, pollutant, pollutant_name, name, gadm1_name) %>%
   summarise(mean = mean(value, na.rm = T)) %>%
   ungroup %>%
   mutate(pass_who = mean <= who_pm25_standard,
@@ -189,7 +189,7 @@ cities_plot <- ggplot(monthly_compliance,
 final_plot <- plot_grid(day_freq_naaqs_nonncap_plot, cities_plot, day_freq_naaqs_ncap_plot,
                         day_freq_who_nonncap_plot, legend, day_freq_who_ncap_plot,
                         ncol = 3)
-quicksave('compliance.png', plot = final_plot)
+quicksave(file.path(get_dir('output'), 'compliance.png'), plot = final_plot)
 
 cities <- fetch_cities_for_india() %>% select(id, longitude, latitude)
 
@@ -217,10 +217,62 @@ p <- ggplot() +
   theme(legend.position = "bottom",
         legend.direction = "horizontal",
         legend.title = element_blank())
-quicksave('cities_grap_distribution.png',
+quicksave(file.path(get_dir('output'), 'cities_grap_distribution.png'),
           plot = p,
           scale = 1.5)
 
+measurement_preset_ncap_province <- measurements_preset_ncap_summary %>%
+  group_by(gadm1_name, grap_cat) %>%
+  summarise(count = n()) %>%
+  ungroup() %>%
+  pivot_wider(names_from = grap_cat, values_from = count, values_fill = list(count = 0)) %>%
+  rename(`State/UT` = gadm1_name)
+write.csv(measurement_preset_ncap_province,
+          file.path(get_dir('output'), 'cities_grap_distribution.csv'), row.names = F)
+
+
+measurements_grap <- measurements_preset_ncap %>%
+  group_by(location_id, grap_cat) %>%
+  summarise(count = n()) %>%
+  ungroup() %>%
+  pivot_wider(names_from = grap_cat, values_from = count, values_fill = list(count = 0)) %>%
+  rowwise() %>%
+  mutate(monitored_days = sum(across(any_of(c('Good', 'Satisfactory', 'Moderate',
+                                              'Poor', 'Very Poor')))))
+
+
+monthly_cities_compliance <- lapply(measurements_preset_ncap %>% distinct(location_id) %>% pull,
+                                    function(loc){
+                                      pass_count(measurements_preset_ncap %>% filter(location_id == loc)) %>%
+                                        mutate(location_id = loc)
+                                    }) %>% bind_rows %>%
+  mutate(`% days > NAAQS` = round(not_pass_naaqs / total * 100, 0)) %>%
+  select(location_id, `% days > NAAQS`)
+
+
+measurement_top10_cities <- measurements_preset_ncap_summary %>%
+  slice_max(n = 10, order_by = mean) %>%
+  select(location_id, city_name, mean) %>%
+  left_join(measurements_grap, by = 'location_id') %>%
+  left_join(monthly_cities_compliance, by = 'location_id')
+write.csv(measurement_top10_cities,
+          file.path(get_dir('output'), 'top10_cities.csv'), row.names = F)
+
+
+p <- ggplot(measurement_top10_cities, aes(x = factor(city_name, levels = city_name), y = mean, fill = mean)) +
+  geom_col() +
+  scale_fill_viridis_c() +
+  theme_crea() +
+  labs(title = glue('Top 10 most polluted cities in India by PM2.5 concentration - {month_year}',
+                    month_year = format(focus_month, '%B %Y')),
+       x = 'City',
+       y = 'Mean PM2.5 concentration (µg/m³)') +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  geom_hline(yintercept = 60, linetype = "dashed", color = "red") +
+  geom_hline(yintercept = 15, linetype = "dashed", color = "blue") +
+  geom_text(aes(x = 11, y = 60, label = "NAAQS"), color = "red", vjust = -0.5, hjust = 1.1) +
+  geom_text(aes(x = 11, y = 15, label = "WHO"), color = "blue", vjust = -0.5, hjust = 1.1)
+quicksave(file.path(get_dir('output'), 'top10_cities.png'), plot = p, scale = 1)
 
 # add warning for cities with no coordinates
 measurements_preset_ncap_summary %>%
