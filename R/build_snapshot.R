@@ -102,11 +102,7 @@ build_snapshot <- function(
   station_statuses <- local({
     clean_stations <- function(stations) {
       stations %>%
-        mutate(infos = gsub("'", "\"", infos)) %>%
-        mutate(infos = gsub("None", "null", infos)) %>%
-        mutate(infos = ifelse(is.na(infos), "{}", infos)) %>%
-        mutate(infos = lapply(infos, jsonlite::fromJSON)) %>%
-        tidyr::unnest_wider(infos) %>%
+        unnest_json_columns('infos') %>%
         select(id, name, city_id, latest_data, status)
     }
 
