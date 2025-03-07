@@ -124,6 +124,14 @@ build_snapshot <- function(
       month = focus_month
     )
 
+    if (nrow(stations) != nrow(station_status)) {
+      stop(
+        glue(
+          "Mismatch in number of stations: {nrow(stations)} != {nrow(station_status)}"
+        )
+      )
+    }
+
     return(station_status)
   })
 
@@ -155,7 +163,19 @@ build_snapshot <- function(
 
 
   # Generate the charts and CSVs
+  log_info("Generating charts and CSVs")
 
+  summarise_station_and_city_statuses(
+    station_statuses = station_statuses,
+    location_presets = location_presets
+  ) %>%
+    writeLines(file.path(get_dir("output"), "statuses_summary.md"))
+
+  write.csv(
+    station_statuses,
+    file.path(get_dir("output"), "statuses.csv"),
+    row.names = FALSE
+  )
 
   # Write the warnings to a CSV
   log_info("Writing warnings to CSV")

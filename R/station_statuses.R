@@ -1,3 +1,4 @@
+
 #' @importFrom dplyr full_join
 #' @importFrom dplyr left_join
 #' @importFrom dplyr join_by
@@ -73,12 +74,7 @@ get_statuses_of_stations <- function(..., old_stations, new_stations, history, m
       percent_complete = n() / as.numeric(lubridate::days_in_month(month))
     ) %>%
     mutate(
-      percent_category = case_when(
-        percent_complete < 0.01 ~ "No data",
-        percent_complete < 0.8 ~ "<80% data",
-        percent_complete >= 0.8 ~ ">80% data",
-        TRUE ~ "Unknown"
-      )
+      percent_category = percent_categoriser(percent_complete)
     ) %>%
     select(
       id = location_id,
@@ -96,4 +92,12 @@ get_statuses_of_stations <- function(..., old_stations, new_stations, history, m
     )
 
   return(results)
+}
+
+percent_categoriser <- function(percent_complete) {
+  case_when(
+    percent_complete < 0.01 ~ "No data",
+    percent_complete < 0.8 ~ "<80% data",
+    .default = ">80% data"
+  )
 }
