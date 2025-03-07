@@ -191,22 +191,38 @@ final_plot <- plot_grid(day_freq_naaqs_nonncap_plot, cities_plot, day_freq_naaqs
                         ncol = 3)
 quicksave('compliance.png', plot = final_plot)
 
+cities <- fetch_cities_for_india() %>% select(id, longitude, latitude)
 
-stations_to_sf <- function(df){
-  coordinates <- df$coordinates %>%
-    sapply(function(x) gsub("'", "\"", x)) %>%
-    # gsub("None", "null", infos)) %>%
-    # mutate(infos = ifelse(is.na(infos), "{}", infos)) %>%
-    lapply(function(x) jsonlite::fromJSON(x)) %>%
-    lapply(function(x) c(unname(x[[2]]), unname(x[[1]]))) %>%
-    do.call(rbind, .) %>%
-    unname()
+measurements_preset_ncap_summary <- measurements_preset_ncap_summary %>%
+  left_join(cities %>% select(id, latitude, longitude), by = c('location_id' = 'id'))
 
-  df <- bind_cols(df, tibble(latitude = coordinates[,1], longitude = coordinates[,2]))
+india_boundary <- sf::st_read('data/Indian_State_Boundary/India_State_Boundary_Updated.shp') %>%
+  sf::st_make_valid()
+india_boundary_centroids <- sf::st_centroid(india_boundary)
 
-  df %>% sf::st_as_sf(coords = c('longitude', 'latitude'), crs = 4326)
-}
+p <- ggplot() +
+  layer_spatial(data = india_boundary, fill = 'white') +
+  geom_text(data = india_boundary_centroids,
+            aes(x = st_coordinates(geometry)[,1],
+                y = st_coordinates(geometry)[,2],
+                label = stname),
+            size = 2) +
+  layer_spatial(data = measurements_preset_ncap_summary %>%
+                  filter(!is.na(latitude) & !is.na(longitude)) %>%
+                  sf::st_as_sf(coords = c('longitude', 'latitude'), crs = 4326),
+                aes(color = grap_cat),
+                size = 3) +
+  scale_color_manual(values = grap_colors_pm25) +
+  theme_void() +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.title = element_blank())
+quicksave('cities_grap_distribution.png',
+          plot = p,
+          scale = 1.5)
 
-stations <- fetch_current_stations_for_india() %>%
-  stations_to_sf()
+
+# add warning for cities with no coordinates
+measurements_preset_ncap_summary %>%
+  filter(is.na(latitude) | is.na(longitude))
 
