@@ -12,3 +12,15 @@ day_threshold_percent <- 0.8
 
 low_value_threshold <- 5
 moderate_value_threshold <- 10
+
+grap_scales_pm25 <- list(
+  'Good' = 30,
+  'Satisfactory' = 60,
+  'Moderate' = 90,
+  'Poor' = 120,
+  'Very Poor' = 250,
+  'Severe' = 500
+)
+
+who_pm25_standard <- 15
+naaqs_pm25_standard <- 60
