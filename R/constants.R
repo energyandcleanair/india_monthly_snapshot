@@ -13,13 +13,22 @@ day_threshold_percent <- 0.8
 low_value_threshold <- 5
 moderate_value_threshold <- 10
 
-grap_scales_pm25 <- list(
+grap_scales_pm25 <- c(
   'Good' = 30,
   'Satisfactory' = 60,
   'Moderate' = 90,
   'Poor' = 120,
   'Very Poor' = 250,
   'Severe' = 500
+)
+
+grap_colors_pm25 <- c(
+  'Good' = '#5A8E42',
+  'Satisfactory' = '#00FF40',
+  'Moderate' = '#FF8000',
+  'Poor' = '#FF0000',
+  'Very Poor' = '#800000',
+  'Severe' = '#000000'
 )
 
 who_pm25_standard <- 15
