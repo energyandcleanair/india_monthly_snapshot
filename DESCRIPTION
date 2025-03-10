@@ -39,6 +39,7 @@ Imports:
     showtext,
     logger,
     R6,
+    units
 Remotes:
     energyandcleanair/creahelpers,
     energyandcleanair/rcrea,
