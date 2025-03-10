@@ -274,4 +274,29 @@ analysis <- function(){
     geom_text(aes(x = 11, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
     geom_text(aes(x = 11, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1)
   quicksave(file.path(get_dir('output'), 'top10_polluted_cities.png'), plot = p, scale = 1)
+
+
+  measurements_top10_cleanest_cities <- measurements_preset_ncap_summary %>%
+    slice_min(n = 10, order_by = mean) %>%
+    select(location_id, city_name, mean) %>%
+    left_join(measurements_grap, by = 'location_id') %>%
+    left_join(monthly_cities_compliance, by = 'location_id')
+  write.csv(measurements_top10_polluted_cities,
+            file.path(get_dir('output'), 'top10_cleanest_cities.csv'), row.names = F)
+
+
+  p <- ggplot(measurements_top10_cleanest_cities, aes(x = factor(city_name, levels = city_name), y = mean, fill = mean)) +
+    geom_col() +
+    scale_fill_viridis_c() +
+    theme_crea() +
+    labs(title = glue('Top 10 most cleanest cities in India by PM2.5 concentration - {month_year}',
+                      month_year = format(focus_month, '%B %Y')),
+         x = 'City',
+         y = 'Mean PM2.5 concentration (µg/m³)') +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    geom_hline(yintercept = 60, linetype = "dashed", color = "black") +
+    geom_hline(yintercept = 15, linetype = "dashed", color = "black") +
+    geom_text(aes(x = 11, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
+    geom_text(aes(x = 11, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1)
+  quicksave(file.path(get_dir('output'), 'top10_cleanest_cities.png'), plot = p, scale = 1)
 }
