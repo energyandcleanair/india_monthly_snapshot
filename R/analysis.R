@@ -412,4 +412,37 @@ analysis <- function(){
     theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
     geom_text(aes(label = count), vjust = -0.5, size = 3)
   quicksave(file.path(get_dir('output'), 'top10_polluted_cities_freq.png'), plot = p, scale = 1)
+
+
+  measurements_top_city_province <- measurements_preset_ncap_summary %>%
+    group_by(gadm1_name) %>%
+    slice_max(n = 1, order_by = mean) %>%
+    arrange(desc(mean))
+
+  # TODO maybe change to warning??
+  if(length(measurements_top_city_province %>% distinct(gadm1_name) %>% pull) != 26){
+    stop('Number of states in India is not 26')
+  }
+
+  p <- ggplot(measurements_top_city_province, aes(x = factor(gadm1_name, levels = measurements_top_city_province %>% pull(gadm1_name)),
+                                                  y = mean,
+                                                  fill = mean)) +
+    geom_col() +
+    scale_fill_viridis_c() +
+    theme_crea() +
+    labs(title = glue('Most polluted city in each state in India by PM2.5 concentration - {month_year}',
+                      month_year = format(focus_month, '%B %Y')),
+         x = 'State',
+         y = 'Mean PM2.5 concentration (µg/m³)') +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    geom_hline(yintercept = 60, linetype = "dashed", color = "black") +
+    geom_hline(yintercept = 15, linetype = "dashed", color = "black") +
+    geom_text(aes(x = nrow(measurements_top_city_province) + 1, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
+    geom_text(aes(x = nrow(measurements_top_city_province) + 1, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
+    geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
+  quicksave(file.path(get_dir('output'), 'top_city_province.png'), plot = p, scale = 1)
+
+  # add warning for cities with no coordinates
+  measurements_preset_ncap_summary %>%
+    filter(is.na(latitude) | is.na(longitude))
 }
