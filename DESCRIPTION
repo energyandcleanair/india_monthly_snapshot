@@ -39,10 +39,11 @@ Imports:
     showtext,
     logger,
     R6,
-    units (== 0.8-5),
+    units,
 Remotes:
     energyandcleanair/creahelpers,
-    energyandcleanair/rcrea
+    energyandcleanair/rcrea,
+    github::r-quantities/units@0.8-5
 RoxygenNote: 7.3.2
 Suggests:
     testthat,
