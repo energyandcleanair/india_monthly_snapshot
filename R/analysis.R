@@ -51,10 +51,10 @@ pass_count <- function(df){
 }
 
 monthly_compliance <- lapply(measurements_preset_ncap_summary %>% distinct(name) %>% pull,
-       function(preset){
-         pass_count(measurements_preset_ncap_summary %>% filter(name == preset)) %>%
-           mutate(name = preset)
-       }) %>% bind_rows %>%
+                             function(preset){
+                               pass_count(measurements_preset_ncap_summary %>% filter(name == preset)) %>%
+                                 mutate(name = preset)
+                             }) %>% bind_rows %>%
   select(name, everything())
 write.csv(monthly_compliance, file.path(get_dir('output'), 'monthly_compliance.csv'),
           row.names = F)
@@ -221,13 +221,13 @@ quicksave(file.path(get_dir('output'), 'cities_grap_distribution.png'),
           plot = p,
           scale = 1.5)
 
-measurement_preset_ncap_province <- measurements_preset_ncap_summary %>%
+measurements_preset_ncap_province <- measurements_preset_ncap_summary %>%
   group_by(gadm1_name, grap_cat) %>%
   summarise(count = n()) %>%
   ungroup() %>%
   pivot_wider(names_from = grap_cat, values_from = count, values_fill = list(count = 0)) %>%
   rename(`State/UT` = gadm1_name)
-write.csv(measurement_preset_ncap_province,
+write.csv(measurements_preset_ncap_province,
           file.path(get_dir('output'), 'cities_grap_distribution.csv'), row.names = F)
 
 
@@ -250,16 +250,16 @@ monthly_cities_compliance <- lapply(measurements_preset_ncap %>% distinct(locati
   select(location_id, `% days > NAAQS`)
 
 
-measurement_top10_cities <- measurements_preset_ncap_summary %>%
+measurements_top10_polluted_cities <- measurements_preset_ncap_summary %>%
   slice_max(n = 10, order_by = mean) %>%
   select(location_id, city_name, mean) %>%
   left_join(measurements_grap, by = 'location_id') %>%
   left_join(monthly_cities_compliance, by = 'location_id')
-write.csv(measurement_top10_cities,
-          file.path(get_dir('output'), 'top10_cities.csv'), row.names = F)
+write.csv(measurements_top10_polluted_cities,
+          file.path(get_dir('output'), 'top10_polluted_cities.csv'), row.names = F)
 
 
-p <- ggplot(measurement_top10_cities, aes(x = factor(city_name, levels = city_name), y = mean, fill = mean)) +
+p <- ggplot(measurements_top10_polluted_cities, aes(x = factor(city_name, levels = city_name), y = mean, fill = mean)) +
   geom_col() +
   scale_fill_viridis_c() +
   theme_crea() +
@@ -268,13 +268,13 @@ p <- ggplot(measurement_top10_cities, aes(x = factor(city_name, levels = city_na
        x = 'City',
        y = 'Mean PM2.5 concentration (µg/m³)') +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  geom_hline(yintercept = 60, linetype = "dashed", color = "red") +
-  geom_hline(yintercept = 15, linetype = "dashed", color = "blue") +
-  geom_text(aes(x = 11, y = 60, label = "NAAQS"), color = "red", vjust = -0.5, hjust = 1.1) +
-  geom_text(aes(x = 11, y = 15, label = "WHO"), color = "blue", vjust = -0.5, hjust = 1.1)
-quicksave(file.path(get_dir('output'), 'top10_cities.png'), plot = p, scale = 1)
+  geom_hline(yintercept = 60, linetype = "dashed", color = "black") +
+  geom_hline(yintercept = 15, linetype = "dashed", color = "black") +
+  geom_text(aes(x = 11, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
+  geom_text(aes(x = 11, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1)
+quicksave(file.path(get_dir('output'), 'top10_polluted_cities.png'), plot = p, scale = 1)
 
-# add warning for cities with no coordinates
-measurements_preset_ncap_summary %>%
-  filter(is.na(latitude) | is.na(longitude))
+
+
+
 
