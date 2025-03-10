@@ -390,4 +390,26 @@ analysis <- function(){
           legend.direction = 'horizontal',
           legend.title = element_blank())
   quicksave(file.path(get_dir('output'), 'top10_polluted_cities_prev.png'), plot = p, scale = 1)
+
+
+  measurements_preset_ncap_top10_count <- measurements_preset_ncap %>%
+    group_by(date, pollutant, pollutant_name) %>%
+    slice_max(n = 10, order_by = value) %>%
+    group_by(location_id, city_name) %>%
+    summarise(count = n()) %>%
+    arrange(desc(count))
+
+  p <- ggplot(measurements_preset_ncap_top10_count, aes(x = factor(city_name, levels = city_name),
+                                                        y = count,
+                                                        fill = count)) +
+    geom_col() +
+    scale_fill_viridis_c() +
+    theme_crea() +
+    labs(title = glue('Top 10 most polluted cities in India by PM2.5 concentration - {month_year}',
+                      month_year = format(focus_month, '%B %Y')),
+         x = 'City',
+         y = 'Mean PM2.5 concentration (µg/m³)') +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    geom_text(aes(label = count), vjust = -0.5, size = 3)
+  quicksave(file.path(get_dir('output'), 'top10_polluted_cities_freq.png'), plot = p, scale = 1)
 }
