@@ -299,4 +299,95 @@ analysis <- function(){
     geom_text(aes(x = 11, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
     geom_text(aes(x = 11, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1)
   quicksave(file.path(get_dir('output'), 'top10_cleanest_cities.png'), plot = p, scale = 1)
+
+
+  cities_prev <- measurements_top10_polluted_cities %>%
+    select(location_id) %>%
+    pull()
+  measurements_raw_prev <- fetch_city_measurements_for_india(start_date = focus_month_start - years(1),
+                                                             end_date = focus_month_end - years(1),
+                                                             cities = cities_prev,
+                                                             use_cache = F)
+
+  # TODO maybe can skip data_check for previous year?
+  check_data(
+    warnings = warnings,
+    measurements = measurements_raw_prev,
+    station_measurements = station_measurements,
+    location_presets = location_presets,
+    day_threshold = day_threshold,
+    focus_month = focus_month - years(1)
+  )
+
+  valid_cities_prev <- measurements_raw_prev %>%
+    group_by(city_id) %>%
+    summarise(days_with_data = n_distinct(date)) %>%
+    filter(days_with_data >= day_threshold) %>%
+    pull(city_id)
+
+  measurements_prev <- measurements_raw_prev %>%
+    filter(city_id %in% valid_cities_prev)
+
+  measurements_prev <- measurements_prev %>%
+    mutate(pass_who = value <= who_pm25_standard,
+           pass_naaqs = value <= naaqs_pm25_standard,
+           pass_naaqs2 = value <= 2 * naaqs_pm25_standard,
+           grap_cat = cut(value, breaks = c(0, unlist(unname(scales_pm25))),
+                          labels = names(scales_pm25)))
+
+  measurements_prev_summary <- measurements_prev %>%
+    group_by(location_id, city_name, pollutant, pollutant_name, gadm1_name) %>%
+    summarise(mean = mean(value, na.rm = T)) %>%
+    ungroup %>%
+    mutate(pass_who = mean <= who_pm25_standard,
+           pass_naaqs = mean <= naaqs_pm25_standard,
+           pass_naaqs2 = mean <= 2 * naaqs_pm25_standard,
+           grap_cat = cut(mean, breaks = c(0, unlist(unname(scales_pm25))),
+                          labels = names(scales_pm25)))
+
+  measurements_prev_grap <- measurements_prev %>%
+    group_by(location_id, grap_cat) %>%
+    summarise(count = n()) %>%
+    ungroup() %>%
+    pivot_wider(names_from = grap_cat, values_from = count, values_fill = list(count = 0)) %>%
+    rowwise() %>%
+    mutate(monitored_days = sum(across(any_of(c('Good', 'Satisfactory', 'Moderate',
+                                                'Poor', 'Very Poor')))))
+
+
+  monthly_cities_compliance_prev <- lapply(measurements_prev %>% distinct(location_id) %>% pull,
+                                           function(loc){
+                                             pass_count(measurements_prev %>% filter(location_id == loc)) %>%
+                                               mutate(location_id = loc)
+                                           }) %>% bind_rows %>%
+    mutate(`% days > NAAQS` = round(not_pass_naaqs / total * 100, 0)) %>%
+    select(location_id, `% days > NAAQS`)
+
+  measurements_top10_polluted_cities_prev <- measurements_prev_summary %>%
+    select(location_id, city_name, mean) %>%
+    left_join(measurements_prev_grap, by = 'location_id') %>%
+    left_join(monthly_cities_compliance_prev, by = 'location_id')
+  write.csv(measurements_top10_polluted_cities_prev,
+            file.path(get_dir('output'), 'top10_polluted_cities_prev.csv'), row.names = F)
+
+  p <- ggplot(bind_rows(measurements_top10_polluted_cities %>% mutate(year = year(focus_month)),
+                        measurements_top10_polluted_cities_prev %>% mutate(year = year(focus_month) - 1)),
+              aes(x = factor(city_name, levels = measurements_top10_polluted_cities %>% pull(city_name)),
+                  y = mean, , fill = factor(year, levels = c(year(focus_month), year(focus_month) - 1)))) +
+    geom_bar(position = 'dodge', stat = 'identity') +
+    theme_crea() +
+    labs(title = glue('Top 10 most polluted cities in India by PM2.5 concentration - {month_year}',
+                      month_year = format(focus_month, '%B %Y')),
+         x = 'City',
+         y = 'Mean PM2.5 concentration (µg/m³)') +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    geom_hline(yintercept = 60, linetype = "dashed", color = "black") +
+    geom_hline(yintercept = 15, linetype = "dashed", color = "black") +
+    geom_text(aes(x = 11, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
+    geom_text(aes(x = 11, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
+    # guides(fill = guide_legend(title = "Year", nrow = 1, byrow = T)) +
+    theme(legend.position = "bottom",
+          legend.direction = 'horizontal',
+          legend.title = element_blank())
+  quicksave(file.path(get_dir('output'), 'top10_polluted_cities_prev.png'), plot = p, scale = 1)
 }
