@@ -13,7 +13,8 @@ fetch_data <- function(url, cache_file, use_cache = TRUE) {
   }
 }
 
-fetch_city_measurements_for_india <- function(start_date, end_date, ..., use_cache = TRUE) {
+fetch_city_measurements_for_india <- function(start_date, end_date, cities = NULL,
+                                              ..., use_cache = TRUE) {
   measurements_url <- glue(
     "https://api.energyandcleanair.org/v1/measurements",
     "?format=csv",
@@ -23,6 +24,11 @@ fetch_city_measurements_for_india <- function(start_date, end_date, ..., use_cac
     "&source=cpcb",
     "&pollutant=pm25"
   )
+  if (!is.null(cities)) {
+    measurements_url <- glue("{measurements_url}&city={cities}",
+                             cities = paste0(cities, collapse = ","))
+  }
+
   cache_file <- file.path(get_dir("cache"), "measurements.csv")
   return(fetch_data(measurements_url, cache_file, use_cache))
 }
