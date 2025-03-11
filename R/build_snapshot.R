@@ -69,13 +69,13 @@ build_snapshot <- function(
 
   # Get the data
   log_info("Fetching data")
-  log_debug("Fetching city_measurements data")
+  log_debug("Fetching measurements data")
   city_measurements_raw <- fetch_city_measurements_for_india(
     start_date = focus_month_start,
     end_date = focus_month_end
   )
 
-  log_debug("Fetching station city_measurements data")
+  log_debug("Fetching station measurements data")
   station_measurements <- fetch_station_measurments_for_india(
     start_date = focus_month_start,
     end_date = focus_month_end
