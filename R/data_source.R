@@ -48,7 +48,7 @@ fetch_station_measurments_for_india <- function(start_date, end_date, ..., use_c
 }
 
 fetch_current_stations_for_india <- function(..., use_cache = TRUE) {
-  url <- glue("https://api.energyandcleanair.org/stations?format=csv&source=cpcb")
+  url <- glue("https://api.energyandcleanair.org/stations?format=csv&source=cpcb&with_data_only=false")
   cache_file <- file.path(get_dir("cache"), "stations.csv")
   return(fetch_data(url, cache_file, use_cache))
 }

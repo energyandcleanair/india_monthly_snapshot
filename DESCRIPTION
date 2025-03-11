@@ -38,10 +38,12 @@ Imports:
     sysfonts,
     showtext,
     logger,
-    R6
+    R6,
+    units
 Remotes:
     energyandcleanair/creahelpers,
-    energyandcleanair/rcrea
+    energyandcleanair/rcrea,
+    github::r-quantities/units
 RoxygenNote: 7.3.2
 Suggests:
     testthat,
