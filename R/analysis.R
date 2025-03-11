@@ -442,6 +442,63 @@ analysis <- function(){
     geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
   quicksave(file.path(get_dir('output'), 'top_city_province.png'), plot = p, scale = 1)
 
+
+  measurements_capitals_summary <- measurements %>%
+    filter(city_name %in% states_capitals) %>% # TODO check match
+    group_by(location_id, city_name, pollutant, pollutant_name, gadm1_name) %>%
+    summarise(mean = mean(value, na.rm = T)) %>%
+    ungroup %>%
+    arrange(desc(mean))
+
+  p <- ggplot(measurements_capitals_summary, aes(x = factor(city_name, levels = measurements_capitals_summary %>% pull(city_name)),
+                                                 y = mean,
+                                                 fill = mean)) +
+    geom_col() +
+    scale_fill_viridis_c() +
+    theme_crea() +
+    labs(title = glue('PM2.5 concentrations across state/provincial capital cities in India - {month_year}',
+                      month_year = format(focus_month, '%B %Y')),
+         x = 'City',
+         y = 'Mean PM2.5 concentration (µg/m³)') +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    geom_hline(yintercept = 60, linetype = "dashed", color = "black") +
+    geom_hline(yintercept = 15, linetype = "dashed", color = "black") +
+    geom_text(aes(x = nrow(measurements_capitals_summary) + 1, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
+    geom_text(aes(x = nrow(measurements_capitals_summary) + 1, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
+    geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
+  quicksave(file.path(get_dir('output'), 'state_capitals.png'), plot = p, scale = 1)
+
+
+  measurements_preset_igp_summary <- measurements %>%
+    left_join(location_presets %>% filter(name == 'igp_cities'),
+              by = 'location_id',
+              relationship = 'many-to-one') %>%
+    mutate(name = replace_na(name, 'non_igp_cities')) %>%
+    filter(name == 'igp_cities', city_name %in% igp_cities_million) %>% # TODO check match
+    group_by(location_id, city_name, pollutant, pollutant_name, name, gadm1_name) %>%
+    summarise(mean = mean(value, na.rm = T)) %>%
+    ungroup %>%
+    arrange(desc(mean))
+
+  p <- ggplot(measurements_preset_igp_summary, aes(x = factor(city_name, levels = measurements_preset_igp_summary %>% pull(city_name)),
+                                                    y = mean,
+                                                    fill = mean)) +
+    geom_col() +
+    scale_fill_viridis_c() +
+    theme_crea() +
+    labs(title = glue('PM2.5 concentrations across million plus cities in Indo-Gangetic Plain in India (with CAAQMS) - {month_year}',
+                      month_year = format(focus_month, '%B %Y')),
+         x = 'City',
+         y = 'Mean PM2.5 concentration (µg/m³)') +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    geom_hline(yintercept = 60, linetype = "dashed", color = "black") +
+    geom_hline(yintercept = 15, linetype = "dashed", color = "black") +
+    geom_text(aes(x = nrow(measurements_preset_igp_summary) + 1, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
+    geom_text(aes(x = nrow(measurements_preset_igp_summary) + 1, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
+    geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
+  quicksave(file.path(get_dir('output'), 'igp_cities_million.png'), plot = p, scale = 1)
+
+
   # add warning for cities with no coordinates
   measurements_preset_ncap_summary %>%
     filter(is.na(latitude) | is.na(longitude))
