@@ -47,6 +47,7 @@ stations_none <- list(
     id = character(),
     name = character(),
     city_id = character(),
+    city_name = character(), # Added city_name
     latest_data = date(),
     status = character()
   ),
@@ -58,6 +59,7 @@ stations_all_live <- list(
     id = c("1", "2", "3"),
     name = c("Station 1", "Station 2", "Station 3"),
     city_id = c("1", "2", "3"),
+    city_name = c("City 1", "City 2", "City 3"), # Added city_name
     latest_data = c(yesterday, yesterday, yesterday),
     status = c("Live", "Live", "Live")
   ),
@@ -73,6 +75,7 @@ stations_one_delayed <- list(
     id = c("1", "2", "3"),
     name = c("Station 1", "Station 2", "Station 3"),
     city_id = c("1", "2", "3"),
+    city_name = c("City 1", "City 2", "City 3"), # Added city_name
     latest_data = as.Date(c(one_week_ago, yesterday, yesterday)),
     status = c("delay", "Live", "Live")
   ),
@@ -88,6 +91,7 @@ stations_one_inactive <- list(
     id = c("1", "2", "3"),
     name = c("Station 1", "Station 2", "Station 3"),
     city_id = c("1", "2", "3"),
+    city_name = c("City 1", "City 2", "City 3"), # Added city_name
     latest_data = c(one_week_ago, yesterday, yesterday),
     status = c("Inactive", "Live", "Live")
   ),
@@ -103,6 +107,7 @@ stations_one_na_details <- list(
     id = c("1", "2", "3"),
     name = c("Station 1", "Station 2", "Station 3"),
     city_id = c("1", "2", "3"),
+    city_name = c("City 1", "City 2", "City 3"), # Added city_name
     latest_data = c(NA, yesterday, yesterday),
     status = c(NA, "Live", "Live")
   ),
@@ -117,6 +122,7 @@ stations_one_no_record_at_all <- list(
     id = c("2", "3"),
     name = c("Station 2", "Station 3"),
     city_id = c("2", "3"),
+    city_name = c("City 2", "City 3"), # Added city_name
     latest_data = c(yesterday, yesterday),
     status = c("Live", "Live")
   ),
@@ -131,6 +137,7 @@ stations_with_various_percentage_history <- list(
     id = c("1", "2", "3"),
     name = c("Station 1", "Station 2", "Station 3"),
     city_id = c("1", "2", "3"),
+    city_name = c("City 1", "City 2", "City 3"), # Added city_name
     latest_data = c(yesterday, yesterday, yesterday),
     status = c("Live", "Live", "Live")
   ),
