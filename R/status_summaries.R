@@ -1,7 +1,8 @@
 summarise_station_and_city_statuses <- function(
   ...,
   station_statuses,
-  location_presets
+  location_presets,
+  warnings
 ) {
 
   key_stats <- ""
@@ -13,7 +14,13 @@ summarise_station_and_city_statuses <- function(
     key_stats <<- paste0(key_stats, "## ", header, "\n\n")
   }
   add_stat <- function(stat, value) {
+    if (value == "" || is.na(value) || trimws(value) == "") {
+      value <- "No value"
+    }
     key_stats <<- paste0(key_stats, "- ", stat, ": ", value, "\n")
+  }
+  add_warning <- function(warning) {
+    key_stats <<- paste0(key_stats, "*", warning, "*\n")
   }
 
   # We need these stats:
@@ -82,6 +89,29 @@ summarise_station_and_city_statuses <- function(
     removed_stations <- station_statuses %>%
       filter(status == "Removed this month")
     add_stat("Removed stations", paste(removed_stations$name, collapse = ", "))
+  })
+
+  add_header("Changes in Cities")
+  local({
+    # Find cities which didn't have stations before that have new stations now
+    previous_month_stations <- station_statuses %>%
+      filter(status != "New")
+
+    new_city_ids <- station_statuses %>%
+      filter(status == "New") %>%
+      filter(!(city_id %in% previous_month_stations$city_id)) %>%
+      pull(city_id)
+
+    new_cities <- station_statuses %>%
+      filter(city_id %in% new_city_ids) %>%
+      distinct(city_id, city_name)
+
+    add_stat("Cities with new stations", paste(new_cities$city_name, collapse = ", "))
+    if (nrow(new_cities) > 0) {
+      info_message <- "Please inform the Data team if any of the new cities needs to be added to NCAP cities or other groups. This analysis will need to be rerun if that is the case."
+      add_warning(info_message)
+      warnings$add_warning("new_cities", info_message)
+    }
   })
 
   add_header("NCAP cities")

@@ -103,7 +103,7 @@ build_snapshot <- function(
     clean_stations <- function(stations) {
       stations %>%
         unnest_json_columns('infos') %>%
-        select(id, name, city_id, latest_data, status)
+        select(id, name, city_id, city_name, latest_data, status)
     }
 
     log_debug("Fetching current stations data")
@@ -167,7 +167,8 @@ build_snapshot <- function(
 
   summarise_station_and_city_statuses(
     station_statuses = station_statuses,
-    location_presets = location_presets
+    location_presets = location_presets,
+    warnings = warnings
   ) %>%
     writeLines(file.path(get_dir("output"), "statuses_summary.md"))
 

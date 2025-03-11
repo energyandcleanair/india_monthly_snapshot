@@ -23,6 +23,7 @@ get_statuses_of_stations <- function(..., old_stations, new_stations, history, m
       id,
       name = name_new,
       city_id = city_id_new,
+      city_name = city_name_new,
       latest_data = latest_data_new,
       exists_old,
       exists_new,
@@ -62,6 +63,7 @@ get_statuses_of_stations <- function(..., old_stations, new_stations, history, m
       id,
       name,
       city_id,
+      city_name,
       latest_data,
       status = status_new,
       change
