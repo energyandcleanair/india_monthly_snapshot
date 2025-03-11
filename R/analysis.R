@@ -1,4 +1,36 @@
-analysis <- function(){
+#' @importFrom tidyr replace_na pivot_wider
+#' @importFrom dplyr left_join
+#' @importFrom dplyr right_join
+#' @importFrom dplyr group_by
+#' @importFrom dplyr summarise
+#' @importFrom dplyr ungroup
+#' @importFrom dplyr mutate
+#' @importFrom dplyr filter
+#' @importFrom dplyr distinct
+#' @importFrom dplyr select
+#' @importFrom dplyr bind_rows
+#' @importFrom dplyr rename
+#' @importFrom dplyr rowwise
+#' @importFrom dplyr across
+#' @importFrom dplyr slice_max
+#' @importFrom dplyr arrange
+#' @importFrom dplyr slice_min
+#' @importFrom cowplot get_legend plot_grid
+#' @importFrom ggspatial layer_spatial
+#' @importFrom sf st_coordinates
+analysis <- function(
+  ...,
+  city_measurements,
+  city_measurements_previous_year,
+  station_measurements,
+  location_presets,
+  focus_month,
+  days_in_month,
+  warnings
+){
+
+  measurements <- city_measurements
+
   measurements_preset_ncap <- measurements %>%
     left_join(location_presets %>% filter(name == 'ncap_cities'),
               by = 'location_id',
@@ -7,8 +39,8 @@ analysis <- function(){
            pass_who = value <= who_pm25_standard,
            pass_naaqs = value <= naaqs_pm25_standard,
            pass_naaqs2 = value <= 2 * naaqs_pm25_standard,
-           grap_cat = cut(value, breaks = c(0, unlist(unname(scales_pm25))),
-                          labels = names(scales_pm25)))
+           grap_cat = cut(value, breaks = c(0, unlist(unname(grap_scales_pm25))),
+                          labels = names(grap_scales_pm25)))
 
   measurements_preset_ncap_summary <- measurements_preset_ncap %>%
     group_by(location_id, city_name, pollutant, pollutant_name, name, gadm1_name) %>%
@@ -17,8 +49,8 @@ analysis <- function(){
     mutate(pass_who = mean <= who_pm25_standard,
            pass_naaqs = mean <= naaqs_pm25_standard,
            pass_naaqs2 = mean <= 2 * naaqs_pm25_standard,
-           grap_cat = cut(mean, breaks = c(0, unlist(unname(scales_pm25))),
-                          labels = names(scales_pm25)))
+           grap_cat = cut(mean, breaks = c(0, unlist(unname(grap_scales_pm25))),
+                          labels = names(grap_scales_pm25)))
 
   pass_count <- function(df){
     total <- nrow(df)
@@ -100,7 +132,7 @@ analysis <- function(){
     xlim(c(0.2, 2.5)) +
     theme_void() +
     coord_polar("y", start = 0) +
-    scale_fill_manual(values = colors) +
+    rcrea::scale_fill_crea_d() +
     geom_text(aes(label = value),
               position = position_stack(vjust = 0.5)) +
     annotate("text", x = 0.25, y = 0,
@@ -116,7 +148,7 @@ analysis <- function(){
     xlim(c(0.2, 2.5)) +
     theme_void() +
     coord_polar("y", start = 0) +
-    scale_fill_manual(values = colors) +
+    rcrea::scale_fill_crea_d() +
     geom_text(aes(label = value),
               position = position_stack(vjust = 0.5)) +
     annotate("text", x = 0.25, y = 0,
@@ -140,7 +172,7 @@ analysis <- function(){
     xlim(c(0.2, 2.5)) +
     theme_void() +
     coord_polar("y", start = 0) +
-    scale_fill_manual(values = colors) +
+    rcrea::scale_fill_crea_d() +
     geom_text(aes(label = value),
               position = position_stack(vjust = 0.5)) +
     annotate("text", x = 0.25, y = 0,
@@ -156,7 +188,7 @@ analysis <- function(){
     xlim(c(0.2, 2.5)) +
     theme_void() +
     coord_polar("y", start = 0) +
-    scale_fill_manual(values = colors) +
+    rcrea::scale_fill_crea_d() +
     geom_text(aes(label = value),
               position = position_stack(vjust = 0.5)) +
     labs(fill = '') +
@@ -177,7 +209,7 @@ analysis <- function(){
     xlim(c(0.2, 2.5)) +
     theme_void() +
     coord_polar("y", start = 0) +
-    scale_fill_manual(values = colors) +
+    rcrea::scale_fill_crea_d() +
     geom_text(aes(label = total),
               position = position_stack(vjust = 0.5)) +
     labs(fill = '') +
@@ -197,9 +229,15 @@ analysis <- function(){
   measurements_preset_ncap_summary <- measurements_preset_ncap_summary %>%
     left_join(cities %>% select(id, latitude, longitude), by = c('location_id' = 'id'))
 
-  india_boundary <- sf::st_read('data/Indian_State_Boundary/India_State_Boundary_Updated.shp') %>%
+  india_boundary <- sf::st_read(
+    system.file(
+      "extdata", "shp", "India_State_Boundary_Updated.shp",
+      package = "indiasnapshots")
+    ) %>%
     sf::st_make_valid()
+  sf::sf_use_s2(FALSE)
   india_boundary_centroids <- sf::st_centroid(india_boundary)
+  sf::sf_use_s2(TRUE)
 
   p <- ggplot() +
     layer_spatial(data = india_boundary, fill = 'white') +
@@ -304,36 +342,17 @@ analysis <- function(){
   cities_prev <- measurements_top10_polluted_cities %>%
     select(location_id) %>%
     pull()
-  measurements_raw_prev <- fetch_city_measurements_for_india(start_date = focus_month_start - years(1),
-                                                             end_date = focus_month_end - years(1),
-                                                             cities = cities_prev,
-                                                             use_cache = F)
 
-  # TODO maybe can skip data_check for previous year?
-  check_data(
-    warnings = warnings,
-    measurements = measurements_raw_prev,
-    station_measurements = station_measurements,
-    location_presets = location_presets,
-    day_threshold = day_threshold,
-    focus_month = focus_month - years(1)
-  )
 
-  valid_cities_prev <- measurements_raw_prev %>%
-    group_by(city_id) %>%
-    summarise(days_with_data = n_distinct(date)) %>%
-    filter(days_with_data >= day_threshold) %>%
-    pull(city_id)
-
-  measurements_prev <- measurements_raw_prev %>%
-    filter(city_id %in% valid_cities_prev)
+  measurements_prev <- city_measurements_previous_year %>%
+    filter(city_id %in% cities_prev)
 
   measurements_prev <- measurements_prev %>%
     mutate(pass_who = value <= who_pm25_standard,
            pass_naaqs = value <= naaqs_pm25_standard,
            pass_naaqs2 = value <= 2 * naaqs_pm25_standard,
-           grap_cat = cut(value, breaks = c(0, unlist(unname(scales_pm25))),
-                          labels = names(scales_pm25)))
+           grap_cat = cut(value, breaks = c(0, unlist(unname(grap_scales_pm25))),
+                          labels = names(grap_scales_pm25)))
 
   measurements_prev_summary <- measurements_prev %>%
     group_by(location_id, city_name, pollutant, pollutant_name, gadm1_name) %>%
@@ -342,8 +361,8 @@ analysis <- function(){
     mutate(pass_who = mean <= who_pm25_standard,
            pass_naaqs = mean <= naaqs_pm25_standard,
            pass_naaqs2 = mean <= 2 * naaqs_pm25_standard,
-           grap_cat = cut(mean, breaks = c(0, unlist(unname(scales_pm25))),
-                          labels = names(scales_pm25)))
+           grap_cat = cut(mean, breaks = c(0, unlist(unname(grap_scales_pm25))),
+                          labels = names(grap_scales_pm25)))
 
   measurements_prev_grap <- measurements_prev %>%
     group_by(location_id, grap_cat) %>%
@@ -420,8 +439,15 @@ analysis <- function(){
     arrange(desc(mean))
 
   # TODO maybe change to warning??
-  if(length(measurements_top_city_province %>% distinct(gadm1_name) %>% pull) != 26){
-    stop('Number of states in India is not 26')
+  actual_number_of_states <- length(measurements_top_city_province %>% distinct(gadm1_name) %>% pull)
+  expected_number_of_states <- 26
+  if(actual_number_of_states != expected_number_of_states){
+    warnings$add_warning('wrong_state_number', paste(
+      'Number of states in India in analysis was',
+      actual_number_of_states,
+      'not',
+      expected_number_of_states)
+    )
   }
 
   p <- ggplot(measurements_top_city_province, aes(x = factor(gadm1_name, levels = measurements_top_city_province %>% pull(gadm1_name)),

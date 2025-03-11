@@ -69,13 +69,13 @@ build_snapshot <- function(
 
   # Get the data
   log_info("Fetching data")
-  log_debug("Fetching measurements data")
-  measurements_raw <- fetch_city_measurements_for_india(
+  log_debug("Fetching city_measurements data")
+  city_measurements_raw <- fetch_city_measurements_for_india(
     start_date = focus_month_start,
     end_date = focus_month_end
   )
 
-  log_debug("Fetching station measurements data")
+  log_debug("Fetching station city_measurements data")
   station_measurements <- fetch_station_measurments_for_india(
     start_date = focus_month_start,
     end_date = focus_month_end
@@ -145,22 +145,35 @@ build_snapshot <- function(
 
   check_data(
     warnings = warnings,
-    measurements = measurements_raw,
+    city_measurements = city_measurements_raw,
     station_measurements = station_measurements,
     location_presets = location_presets,
     day_threshold = day_threshold,
     focus_month = focus_month
   )
 
-  valid_cities <- measurements_raw %>%
+  valid_cities <- city_measurements_raw %>%
     group_by(city_id) %>%
     summarise(days_with_data = n_distinct(date)) %>%
     filter(days_with_data >= day_threshold) %>%
     pull(city_id)
 
-  measurements <- measurements_raw %>%
+  city_measurements <- city_measurements_raw %>%
     filter(city_id %in% valid_cities)
 
+  city_measurements_previous_year_raw <- fetch_city_measurements_for_india(
+    start_date = focus_month_start - lubridate::years(1),
+    end_date = focus_month_end - lubridate::years(1)
+  )
+
+  valid_cities_previous_year <- city_measurements_previous_year_raw %>%
+    group_by(city_id) %>%
+    summarise(days_with_data = n_distinct(date)) %>%
+    filter(days_with_data >= day_threshold) %>%
+    pull(city_id)
+
+  city_measurements_previous_year <- city_measurements_previous_year_raw %>%
+    filter(city_id %in% valid_cities_previous_year)
 
   # Generate the charts and CSVs
   log_info("Generating charts and CSVs")
@@ -176,6 +189,16 @@ build_snapshot <- function(
     station_statuses,
     file.path(get_dir("output"), "statuses.csv"),
     row.names = FALSE
+  )
+
+  analysis(
+    city_measurements = city_measurements,
+    city_measurements_previous_year = city_measurements_previous_year,
+    station_measurements = station_measurements,
+    location_presets = location_presets,
+    focus_month = focus_month,
+    days_in_month = days_in_month,
+    warnings = warnings
   )
 
   # Write the warnings to a CSV
