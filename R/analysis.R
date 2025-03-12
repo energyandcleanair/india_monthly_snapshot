@@ -32,6 +32,7 @@ analysis <- function(
   measurements <- city_measurements
 
   measurements_preset_ncap <- measurements %>%
+    # mutate(city_name = paste(city_name, gadm1_name, sep = ', ')) %>%
     left_join(location_presets %>% filter(name == 'ncap_cities'),
               by = 'location_id',
               relationship = 'many-to-one') %>%
@@ -51,37 +52,6 @@ analysis <- function(
            pass_naaqs2 = mean <= 2 * naaqs_pm25_standard,
            grap_cat = cut(mean, breaks = c(0, unlist(unname(grap_scales_pm25))),
                           labels = names(grap_scales_pm25)))
-
-  pass_count <- function(df){
-    total <- nrow(df)
-    pass_who <- nrow(df %>% filter(pass_who))
-    not_pass_who <- nrow(df %>% filter(!pass_who))
-
-    if(pass_who + not_pass_who != total){
-      stop('pass_who + not_pass_who != total')
-    }
-
-    pass_naaqs <- nrow(df %>% filter(pass_naaqs))
-    not_pass_naaqs <- nrow(df %>% filter(!pass_naaqs))
-
-    if(pass_naaqs + not_pass_naaqs != total){
-      stop('pass_naaqs + not_pass_naaqs != total')
-    }
-
-    pass_naaqs2 <- nrow(df %>% filter(pass_naaqs2))
-    not_pass_naaqs2 <- nrow(df %>% filter(!pass_naaqs2))
-
-    if(pass_naaqs2 + not_pass_naaqs2 != total){
-      stop('pass_naaqs2 + not_pass_naaqs2 != total')
-    }
-
-    return(data.frame(total = total,
-                      pass_who = pass_who,
-                      not_pass_who = not_pass_who,
-                      pass_naaqs = pass_naaqs,
-                      not_pass_naaqs = not_pass_naaqs,
-                      not_pass_naaqs2 = not_pass_naaqs2))
-  }
 
   monthly_compliance <- lapply(measurements_preset_ncap_summary %>% distinct(name) %>% pull,
                                function(preset){
@@ -291,7 +261,7 @@ analysis <- function(
 
   measurements_top10_polluted_cities <- measurements_preset_ncap_summary %>%
     slice_max(n = 10, order_by = mean) %>%
-    select(location_id, city_name, mean) %>%
+    select(location_id, city_name, gadm1_name, mean) %>%
     left_join(measurements_grap, by = 'location_id') %>%
     left_join(monthly_cities_compliance, by = 'location_id')
   write.csv(measurements_top10_polluted_cities,
@@ -470,7 +440,7 @@ analysis <- function(
 
 
   measurements_capitals_summary <- measurements %>%
-    filter(city_name %in% states_capitals) %>% # TODO check match
+    filter(tolower(city_name) %in% tolower(states_capitals)) %>%
     group_by(location_id, city_name, pollutant, pollutant_name, gadm1_name) %>%
     summarise(mean = mean(value, na.rm = T)) %>%
     ungroup %>%
@@ -500,11 +470,14 @@ analysis <- function(
               by = 'location_id',
               relationship = 'many-to-one') %>%
     mutate(name = replace_na(name, 'non_igp_cities')) %>%
-    filter(name == 'igp_cities', city_name %in% igp_cities_million) %>% # TODO check match
+    filter(name == 'igp_cities', city_name %in% igp_cities_million) %>%
     group_by(location_id, city_name, pollutant, pollutant_name, name, gadm1_name) %>%
     summarise(mean = mean(value, na.rm = T)) %>%
     ungroup %>%
-    arrange(desc(mean))
+    arrange(desc(mean)) %>%
+    left_join(cities %>% select(id, latitude, longitude), by = c('location_id' = 'id')) %>%
+    mutate(grap_cat = cut(mean, breaks = c(0, unlist(unname(grap_scales_pm25))),
+                          labels = names(grap_scales_pm25)))
 
   p <- ggplot(measurements_preset_igp_summary, aes(x = factor(city_name, levels = measurements_preset_igp_summary %>% pull(city_name)),
                                                     y = mean,
@@ -528,4 +501,37 @@ analysis <- function(
   # add warning for cities with no coordinates
   measurements_preset_ncap_summary %>%
     filter(is.na(latitude) | is.na(longitude))
+}
+
+
+#' @importFrom dplyr filter
+pass_count <- function(df){
+  total <- nrow(df)
+  pass_who <- nrow(df %>% filter(pass_who))
+  not_pass_who <- nrow(df %>% filter(!pass_who))
+
+  if(pass_who + not_pass_who != total){
+    stop('pass_who + not_pass_who != total')
+  }
+
+  pass_naaqs <- nrow(df %>% filter(pass_naaqs))
+  not_pass_naaqs <- nrow(df %>% filter(!pass_naaqs))
+
+  if(pass_naaqs + not_pass_naaqs != total){
+    stop('pass_naaqs + not_pass_naaqs != total')
+  }
+
+  pass_naaqs2 <- nrow(df %>% filter(pass_naaqs2))
+  not_pass_naaqs2 <- nrow(df %>% filter(!pass_naaqs2))
+
+  if(pass_naaqs2 + not_pass_naaqs2 != total){
+    stop('pass_naaqs2 + not_pass_naaqs2 != total')
+  }
+
+  return(data.frame(total = total,
+                    pass_who = pass_who,
+                    not_pass_who = not_pass_who,
+                    pass_naaqs = pass_naaqs,
+                    not_pass_naaqs = not_pass_naaqs,
+                    not_pass_naaqs2 = not_pass_naaqs2))
 }
