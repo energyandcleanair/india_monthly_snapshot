@@ -1,31 +1,30 @@
-pkg.env.dirs <- new.env()
+pkg_env_dirs <- new.env()
 
 init_dirs <- function(
-  ...,
-  output_dir,
-  month_subdir
-) {
-  pkg.env.dirs$base <- output_dir
-  pkg.env.dirs$month <- file.path(pkg.env.dirs$base, month_subdir)
-  pkg.env.dirs$cache <- file.path(pkg.env.dirs$month, "cache")
-  pkg.env.dirs$output <- file.path(pkg.env.dirs$month, "output")
-  pkg.env.dirs$diag <- file.path(pkg.env.dirs$month, "diagnostics")
+    ...,
+    output_dir,
+    month_subdir) {
+  pkg_env_dirs$base <- output_dir
+  pkg_env_dirs$month <- file.path(pkg_env_dirs$base, month_subdir)
+  pkg_env_dirs$cache <- file.path(pkg_env_dirs$month, "cache")
+  pkg_env_dirs$output <- file.path(pkg_env_dirs$month, "output")
+  pkg_env_dirs$diag <- file.path(pkg_env_dirs$month, "diagnostics")
 
-  for (dir_name in names(pkg.env.dirs)) {
-    dir_path <- get(dir_name, envir = pkg.env.dirs)
+  for (dir_name in names(pkg_env_dirs)) {
+    dir_path <- get(dir_name, envir = pkg_env_dirs)
     if (!dir.exists(dir_path)) {
       dir.create(dir_path, recursive = TRUE)
     }
   }
 
-  for (dir_name in names(pkg.env.dirs)) {
-    dir_path <- get(dir_name, envir = pkg.env.dirs)
+  for (dir_name in names(pkg_env_dirs)) {
+    dir_path <- get(dir_name, envir = pkg_env_dirs)
     log_debug(paste("Initialised directory:", dir_name, "with path:", dir_path))
   }
 
-  lockEnvironment(pkg.env.dirs)
+  lockEnvironment(pkg_env_dirs)
 }
 
 get_dir <- function(dir_name) {
-  return(get(dir_name, envir = pkg.env.dirs))
+  return(get(dir_name, envir = pkg_env_dirs))
 }

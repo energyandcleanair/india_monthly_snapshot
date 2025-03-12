@@ -214,7 +214,6 @@ describe("get_statuses_of_stations", {
   })
 
   describe("for one station out of the list", {
-
     describe("old status \"Live\",", {
       describe("new status \"Live\"", {
         it("should return \"No change\"", {
@@ -325,10 +324,10 @@ describe("get_statuses_of_stations", {
       })
     })
     describe("old status \"Inactive\"", {
-      # Inactive -> Live = Reactivated
-      # Inactive -> Delay = Reactivated
-      # Inactive -> Inactive = Removed in a previous month
-      # Inactive -> NA details = Removed in a previous month
+      # Inactive → Live = Reactivated
+      # Inactive → Delay = Reactivated
+      # Inactive → Inactive = Removed in a previous month
+      # Inactive → NA details = Removed in a previous month
       describe("new status \"Live\"", {
         it("should return \"Reactivated\"", {
           diff <- indiasnapshots:::get_statuses_of_stations(
@@ -369,7 +368,10 @@ describe("get_statuses_of_stations", {
           )
 
           expected_stations <- stations_one_inactive$stations %>%
-            mutate(change = case_when(id == "1" ~ "Removed in a previous month", TRUE ~ "No change"))
+            mutate(change = case_when(
+              id == "1" ~ "Removed in a previous month",
+              TRUE ~ "No change"
+            ))
 
           expect_change_equal(expected_stations, diff)
         })
@@ -384,17 +386,20 @@ describe("get_statuses_of_stations", {
           )
 
           expected_stations <- stations_one_na_details$stations %>%
-            mutate(change = case_when(id == "1" ~ "Removed in a previous month", TRUE ~ "No change"))
+            mutate(change = case_when(
+              id == "1" ~ "Removed in a previous month",
+              TRUE ~ "No change"
+            ))
 
           expect_change_equal(expected_stations, diff)
         })
       })
     })
     describe("old status \"NA details\"", {
-      # NA details -> Live = Reactivated
-      # NA details -> Delay = Reactivated
-      # NA details -> Inactive = Removed in a previous month
-      # NA details -> NA details = Removed in a previous month
+      # NA details → Live = Reactivated
+      # NA details → Delay = Reactivated
+      # NA details → Inactive = Removed in a previous month
+      # NA details → NA details = Removed in a previous month
       describe("new status \"Live\"", {
         it("should return \"Reactivated\"", {
           diff <- indiasnapshots:::get_statuses_of_stations(
@@ -435,7 +440,10 @@ describe("get_statuses_of_stations", {
           )
 
           expected_stations <- stations_one_inactive$stations %>%
-            mutate(change = case_when(id == "1" ~ "Removed in a previous month", TRUE ~ "No change"))
+            mutate(change = case_when(
+              id == "1" ~ "Removed in a previous month",
+              TRUE ~ "No change"
+            ))
 
           expect_change_equal(expected_stations, diff)
         })
@@ -450,17 +458,20 @@ describe("get_statuses_of_stations", {
           )
 
           expected_stations <- stations_one_na_details$stations %>%
-            mutate(change = case_when(id == "1" ~ "Removed in a previous month", TRUE ~ "No change"))
+            mutate(change = case_when(
+              id == "1" ~ "Removed in a previous month",
+              TRUE ~ "No change"
+            ))
 
           expect_change_equal(expected_stations, diff)
         })
       })
     })
     describe("not in old list", {
-      # not in old list -> Live = New
-      # not in old list -> Delay = New
-      # not in old list -> Inactive = Removed in a previous month
-      # not in old list -> NA details = Removed in a previous month
+      # not in old list → Live = New
+      # not in old list → Delay = New
+      # not in old list → Inactive = Removed in a previous month
+      # not in old list → NA details = Removed in a previous month
       describe("new status \"Live\"", {
         it("should return \"New\"", {
           diff <- indiasnapshots:::get_statuses_of_stations(
@@ -551,5 +562,4 @@ describe("get_statuses_of_stations", {
       expect_percent_equal(expected_stations, diff)
     })
   })
-
 })

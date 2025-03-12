@@ -1,10 +1,8 @@
 summarise_station_and_city_statuses <- function(
-  ...,
-  station_statuses,
-  location_presets,
-  warnings
-) {
-
+    ...,
+    station_statuses,
+    location_presets,
+    warnings) {
   key_stats <- ""
 
   add_header <- function(header) {
@@ -49,7 +47,6 @@ summarise_station_and_city_statuses <- function(
 
   add_header("City Statuses")
   local({
-
     cities <- station_statuses %>%
       group_by(city_id) %>%
       summarise(
@@ -73,7 +70,6 @@ summarise_station_and_city_statuses <- function(
     cities_with_no_data <- cities %>%
       filter(percent_category == "No data")
     add_stat("Cities with <1% data", nrow(cities_with_no_data))
-
   })
 
   add_header("Changes in Stations")
@@ -108,7 +104,10 @@ summarise_station_and_city_statuses <- function(
 
     add_stat("Cities with new stations", paste(new_cities$city_name, collapse = ", "))
     if (nrow(new_cities) > 0) {
-      info_message <- "Please inform the Data team if any of the new cities needs to be added to NCAP cities or other groups. This analysis will need to be rerun if that is the case."
+      info_message <- paste(
+        "Please inform the Data team if any of the new cities needs to be added to NCAP cities or",
+        "other groups. This analysis will need to be rerun if that is the case."
+      )
       add_warning(info_message)
       warnings$add_warning("new_cities", info_message)
     }
@@ -121,7 +120,7 @@ summarise_station_and_city_statuses <- function(
 
     ncap_city_stats <- station_statuses %>%
       filter(city_id %in% ncap_cities$location_id)
-    
+
     ncap_city_stats <- ncap_city_stats %>%
       group_by(city_id) %>%
       summarise(
@@ -130,7 +129,7 @@ summarise_station_and_city_statuses <- function(
       mutate(
         percent_category = percent_categoriser(percent_complete)
       )
-    
+
     total_ncap_cities <- nrow(ncap_city_stats)
     add_stat("NCAP cities covered by CAAQMS", total_ncap_cities)
 
@@ -154,7 +153,7 @@ summarise_station_and_city_statuses <- function(
 
     non_ncap_city_stats <- station_statuses %>%
       filter(!(city_id %in% ncap_cities$location_id))
-    
+
     non_ncap_city_stats <- non_ncap_city_stats %>%
       group_by(city_id) %>%
       summarise(
@@ -163,7 +162,7 @@ summarise_station_and_city_statuses <- function(
       mutate(
         percent_category = percent_categoriser(percent_complete)
       )
-    
+
     total_non_ncap_cities <- nrow(non_ncap_city_stats)
     add_stat("Non-NCAP cities covered by CAAQMS", total_non_ncap_cities)
 
@@ -179,7 +178,7 @@ summarise_station_and_city_statuses <- function(
       filter(percent_category == "No data")
     add_stat("Non-NCAP cities with <1% data", nrow(non_ncap_cities_with_no_data))
   })
-  
+
 
   return(key_stats)
 }

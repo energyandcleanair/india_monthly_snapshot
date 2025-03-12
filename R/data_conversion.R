@@ -1,4 +1,4 @@
-unnest_json_columns <- function(df, column_name){
+unnest_json_columns <- function(df, column_name) {
   df %>%
     mutate(!!column_name := gsub("'", "\"", !!sym(column_name))) %>%
     mutate(!!column_name := gsub("None", "null", !!sym(column_name))) %>%

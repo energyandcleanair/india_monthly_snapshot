@@ -26,14 +26,15 @@ fetch_city_measurements_for_india <- function(start_date, end_date, cities = NUL
   )
   if (!is.null(cities)) {
     measurements_url <- glue("{measurements_url}&city={cities}",
-                             cities = paste0(cities, collapse = ","))
+      cities = paste0(cities, collapse = ",")
+    )
   }
 
   cache_file <- file.path(get_dir("cache"), "measurements.csv")
   return(fetch_data(measurements_url, cache_file, use_cache))
 }
 
-fetch_station_measurments_for_india <- function(start_date, end_date, ..., use_cache = TRUE) {
+fetch_station_measurements_for_india <- function(start_date, end_date, ..., use_cache = TRUE) {
   measurements_url <- glue(
     "https://api.energyandcleanair.org/v1/measurements",
     "?format=csv",
@@ -48,25 +49,39 @@ fetch_station_measurments_for_india <- function(start_date, end_date, ..., use_c
 }
 
 fetch_current_stations_for_india <- function(..., use_cache = TRUE) {
-  url <- glue("https://api.energyandcleanair.org/stations?format=csv&source=cpcb&with_data_only=false")
+  url <- glue(
+    "https://api.energyandcleanair.org/stations",
+    "?format=csv",
+    "&source=cpcb",
+    "&with_data_only=false"
+  )
   cache_file <- file.path(get_dir("cache"), "stations.csv")
   return(fetch_data(url, cache_file, use_cache))
 }
 
 fetch_previous_stations_for_india <- function(year_month, ..., use_cache = TRUE) {
-  url <- glue("https://storage.googleapis.com/crea-public/plots/india_snapshots/{year_month}/cache/stations.csv")
+  url <- glue(
+    "https://storage.googleapis.com/",
+    "crea-public/plots/india_snapshots/{year_month}/cache/stations.csv"
+  )
   cache_file <- file.path(get_dir("cache"), "stations_previous.csv")
   return(fetch_data(url, cache_file, use_cache))
 }
 
 fetch_location_presets_for_india <- function(year_month, ..., use_cache = TRUE) {
-  url <- "http://api.energyandcleanair.org/v1/location_presets?format=csv"
+  url <- glue(
+    "http://api.energyandcleanair.org/v1/location_presets",
+    "?format=csv"
+  )
   cache_file <- file.path(get_dir("cache"), "location_presets.csv")
   return(fetch_data(url, cache_file, use_cache))
 }
 
-fetch_cities_for_india <- function(){
-  url <- 'https://api.energyandcleanair.org/cities?country=IN&format=csv'
+fetch_cities_for_india <- function() {
+  url <- glue(
+    "https://api.energyandcleanair.org/cities",
+    "?country=IN&format=csv"
+  )
   cache_file <- file.path(get_dir("cache"), "cities.csv")
   return(fetch_data(url, cache_file))
 }

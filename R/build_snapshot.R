@@ -22,7 +22,7 @@ log_threshold(DEBUG)
 build_snapshot <- function(
     focus_month = NULL,
     output_dir = "data") {
-  log_info("Initialsing arguments")
+  log_info("Initialising arguments")
   focus_month <- local({
     if (!is.null(focus_month)) {
       log_info("Using focus_month from argument")
@@ -76,7 +76,7 @@ build_snapshot <- function(
   )
 
   log_debug("Fetching station measurements data")
-  station_measurements <- fetch_station_measurments_for_india(
+  station_measurements <- fetch_station_measurements_for_india(
     start_date = focus_month_start,
     end_date = focus_month_end
   ) %>%
@@ -102,7 +102,7 @@ build_snapshot <- function(
   station_statuses <- local({
     clean_stations <- function(stations) {
       stations %>%
-        unnest_json_columns('infos') %>%
+        unnest_json_columns("infos") %>%
         select(id, name, city_id, city_name, latest_data, status)
     }
 
