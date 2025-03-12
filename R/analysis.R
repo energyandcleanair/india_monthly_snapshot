@@ -497,7 +497,27 @@ analysis <- function(
     geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
   quicksave(file.path(get_dir('output'), 'igp_cities_million.png'), plot = p, scale = 1)
 
-
+  p <- ggplot() +
+    layer_spatial(data = india_boundary %>% filter(tolower(stname) %in% tolower(igp_states)),
+                  fill = 'white') +
+    geom_text(data = india_boundary_centroids %>% filter(tolower(stname) %in% tolower(igp_states)),
+              aes(x = st_coordinates(geometry)[,1],
+                  y = st_coordinates(geometry)[,2],
+                  label = stname),
+              size = 2) +
+    layer_spatial(data = measurements_preset_igp_summary %>%
+                    filter(!is.na(latitude) & !is.na(longitude)) %>%
+                    sf::st_as_sf(coords = c('longitude', 'latitude'), crs = 4326),
+                  aes(color = grap_cat),
+                  size = 3) +
+    scale_color_manual(values = grap_colors_pm25) +
+    theme_void() +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.title = element_blank())
+  quicksave(file.path(get_dir('output'), 'igp_cities_grap_distribution.png'),
+            plot = p,
+            scale = 1.5)
   # add warning for cities with no coordinates
   measurements_preset_ncap_summary %>%
     filter(is.na(latitude) | is.na(longitude))
