@@ -1,5 +1,8 @@
 linters: linters_with_defaults(
     line_length_linter(100),
     object_length_linter(length = 40L),
-    object_usage_linter = NULL
+    object_usage_linter = NULL,
+    return_linter(
+      return_style = c("implicit", "explicit")
+    )
   )
