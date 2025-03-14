@@ -22,13 +22,14 @@
 analysis <- function(
     ...,
     city_measurements,
-    city_measurements_previous_year,
+    city_measurements_previous_years,
     station_measurements,
     location_presets,
     focus_month,
     days_in_month,
     warnings) {
   measurements <- city_measurements
+  focus_year <- focus_month %>% lubridate::year()
 
   measurements_preset_ncap <- measurements %>%
     left_join(location_presets %>% filter(name == "ncap_cities"),
@@ -408,11 +409,8 @@ analysis <- function(
     select(location_id) %>%
     pull()
 
-
-  measurements_prev <- city_measurements_previous_year %>%
-    filter(city_id %in% cities_prev)
-
-  measurements_prev <- measurements_prev %>%
+  measurements_prev <- city_measurements_previous_years %>%
+    filter(city_id %in% cities_prev, lubridate::year(date) == focus_year - 1) %>%
     mutate(
       pass_who = value <= who_pm25_standard,
       pass_naaqs = value <= naaqs_pm25_standard,
@@ -447,7 +445,6 @@ analysis <- function(
       "Good", "Satisfactory", "Moderate",
       "Poor", "Very Poor"
     )))))
-
 
   monthly_cities_compliance_prev <- lapply(
     measurements_prev %>% distinct(location_id) %>% pull(),
