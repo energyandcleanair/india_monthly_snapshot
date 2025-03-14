@@ -162,7 +162,7 @@ build_snapshot <- function(
   city_measurements <- city_measurements_raw %>%
     filter(city_id %in% valid_cities)
 
-  city_measurements_previous_years <- lapply((focus_year - 8):(focus_year - 1), function(year){
+  city_measurements_previous_years <- lapply((focus_year - 8):(focus_year - 1), function(year) {
     log_info(paste("Fetching data for year", year))
     city_measurements_previous_year_raw <- fetch_city_measurements_for_india(
       start_date = focus_month_start %>%
@@ -170,7 +170,7 @@ build_snapshot <- function(
       end_date = focus_month_end %>%
         lubridate::`year<-`(year) %>%
         lubridate::`day<-`(lubridate::days_in_month(.)),
-      use_cache = F
+      use_cache = FALSE
     )
 
     valid_cities_previous_year <- city_measurements_previous_year_raw %>%
@@ -181,7 +181,8 @@ build_snapshot <- function(
 
     city_measurements_previous_year_raw %>%
       filter(city_id %in% valid_cities_previous_year)
-  }) %>% bind_rows()
+  }) %>%
+    bind_rows()
 
   # Generate the charts and CSVs
   log_info("Generating charts and CSVs")
