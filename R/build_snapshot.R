@@ -56,6 +56,7 @@ build_snapshot <- function(
 
   focus_month_start <- lubridate::floor_date(focus_month, "month")
   focus_month_end <- lubridate::ceiling_date(focus_month, "month") - lubridate::day(1)
+  focus_year <- lubridate::year(focus_month)
 
   previous_month_start <- lubridate::floor_date(focus_month_start - lubridate::day(1), "month")
   log_debug(
@@ -161,19 +162,26 @@ build_snapshot <- function(
   city_measurements <- city_measurements_raw %>%
     filter(city_id %in% valid_cities)
 
-  city_measurements_previous_year_raw <- fetch_city_measurements_for_india(
-    start_date = focus_month_start - lubridate::years(1),
-    end_date = focus_month_end - lubridate::years(1)
-  )
+  city_measurements_previous_years <- lapply((focus_year - 8):(focus_year - 1), function(year){
+    log_info(paste("Fetching data for year", year))
+    city_measurements_previous_year_raw <- fetch_city_measurements_for_india(
+      start_date = focus_month_start %>%
+        lubridate::`year<-`(year),
+      end_date = focus_month_end %>%
+        lubridate::`year<-`(year) %>%
+        lubridate::`day<-`(lubridate::days_in_month(.)),
+      use_cache = F
+    )
 
-  valid_cities_previous_year <- city_measurements_previous_year_raw %>%
-    group_by(city_id) %>%
-    summarise(days_with_data = n_distinct(date)) %>%
-    filter(days_with_data >= day_threshold) %>%
-    pull(city_id)
+    valid_cities_previous_year <- city_measurements_previous_year_raw %>%
+      group_by(city_id) %>%
+      summarise(days_with_data = n_distinct(date)) %>%
+      filter(days_with_data >= day_threshold) %>%
+      pull(city_id)
 
-  city_measurements_previous_year <- city_measurements_previous_year_raw %>%
-    filter(city_id %in% valid_cities_previous_year)
+    city_measurements_previous_year_raw %>%
+      filter(city_id %in% valid_cities_previous_year)
+  }) %>% bind_rows()
 
   # Generate the charts and CSVs
   log_info("Generating charts and CSVs")
@@ -193,7 +201,7 @@ build_snapshot <- function(
 
   analysis(
     city_measurements = city_measurements,
-    city_measurements_previous_year = city_measurements_previous_year,
+    city_measurements_previous_years = city_measurements_previous_years,
     station_measurements = station_measurements,
     location_presets = location_presets,
     focus_month = focus_month,
