@@ -44,8 +44,7 @@ Imports:
     validate
 Remotes:
     energyandcleanair/creahelpers,
-    energyandcleanair/rcrea,
-    github::r-quantities/units
+    energyandcleanair/rcrea
 RoxygenNote: 7.3.2
 Suggests:
     testthat,
