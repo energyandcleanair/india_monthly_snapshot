@@ -13,7 +13,7 @@ fetch_city_measurements_for_india <- function(
     "&pollutant=pm25"
   )
 
-  cache_file <- file.path(get_dir("cache"), "measurements.csv")
+  cache_file <- file.path(get_dir("cache"), glue("measurements_{start_date}_{end_date}.csv"))
 
   city_measurement_rules <- validate::validator(
     all(level == "city"),
@@ -113,12 +113,15 @@ fetch_cities_for_india <- function() {
   return(
     fetch_data(url, cache_file) %>%
       validate(
-        columns = c("city_id", "city_name", "gadm1_id", "gadm1_name"),
+        columns = c("id", "name", "gadm1_id", "country_id", "level", "longitude", "latitude"),
         rules = validate::validator(
-          is.character(city_id),
-          is.character(city_name),
+          is.character(id),
+          is.character(name),
           is.character(gadm1_id),
-          is.character(gadm1_name)
+          all(country_id == "IN"),
+          all(level == "city"),
+          is.numeric(longitude),
+          is.numeric(latitude)
         )
       )
   )
@@ -183,16 +186,31 @@ cache_data <- function(url, cache_file) {
 }
 fetch_data <- function(url, cache_file, use_cache = TRUE) {
   if (use_cache) {
-    return(cache_data(url, cache_file))
+    data <- cache_data(url, cache_file)
   } else {
-    return(readr::read_csv(url, show_col_types = FALSE))
+    data <- readr::read_csv(url, show_col_types = FALSE)
   }
+
+  attr(data, "url") <- url
+
+  return(data)
 }
 validate <- function(data, ..., columns, rules) {
   if (!missing(columns)) {
     missing_columns <- setdiff(columns, colnames(data))
     if (length(missing_columns) > 0) {
-      stop(paste("Columns missing in data:", missing_columns))
+
+      url <- attr(data, "url")
+
+      url_message <- if (!missing(url)) {
+        glue(" (from {url})")
+      } else {
+        ""
+      }
+
+      missing_columns_message <- paste(missing_columns, collapse = ", ")
+
+      stop(glue("Columns missing in data{url_message}: {missing_columns_message}"))
     }
   }
 

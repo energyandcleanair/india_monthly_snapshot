@@ -169,8 +169,7 @@ build_snapshot <- function(
         lubridate::`year<-`(year),
       end_date = focus_month_end %>%
         lubridate::`year<-`(year) %>%
-        lubridate::`day<-`(lubridate::days_in_month(.)),
-      use_cache = FALSE
+        lubridate::`day<-`(lubridate::days_in_month(.))
     )
 
     valid_cities_previous_year <- city_measurements_previous_year_raw %>%
