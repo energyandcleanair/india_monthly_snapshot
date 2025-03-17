@@ -1,23 +1,5 @@
-#' @importFrom logger log_threshold
-#' @importFrom logger DEBUG
 log_threshold(DEBUG)
 
-#' @importFrom glue glue
-#' @importFrom magrittr %>%
-#' @importFrom dplyr mutate
-#' @importFrom dplyr select
-#' @importFrom dplyr filter
-#' @importFrom dplyr arrange
-#' @importFrom dplyr summarise
-#' @importFrom dplyr group_by
-#' @importFrom dplyr distinct
-#' @importFrom dplyr inner_join
-#' @importFrom dplyr left_join
-#' @importFrom dplyr bind_rows
-#' @importFrom dplyr pull
-#' @importFrom dplyr n_distinct
-#' @importFrom logger log_info
-#' @importFrom logger log_debug
 #' @export
 build_snapshot <- function(
     focus_month = NULL,

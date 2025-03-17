@@ -1,4 +1,4 @@
-#' @importFrom R6 R6Class
+
 Warnings <- R6Class( # nolint: object_name_linter.
   "Warnings",
   public = list(

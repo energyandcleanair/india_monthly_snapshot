@@ -1,24 +1,3 @@
-#' @importFrom tidyr replace_na pivot_wider
-#' @importFrom dplyr left_join
-#' @importFrom dplyr right_join
-#' @importFrom dplyr group_by
-#' @importFrom dplyr summarise
-#' @importFrom dplyr ungroup
-#' @importFrom dplyr mutate
-#' @importFrom dplyr filter
-#' @importFrom dplyr distinct
-#' @importFrom dplyr select
-#' @importFrom dplyr bind_rows
-#' @importFrom dplyr rename
-#' @importFrom dplyr rowwise
-#' @importFrom dplyr across
-#' @importFrom dplyr slice_max
-#' @importFrom dplyr arrange
-#' @importFrom dplyr slice_min
-#' @importFrom dplyr .data
-#' @importFrom cowplot get_legend plot_grid
-#' @importFrom ggspatial layer_spatial
-#' @importFrom sf st_coordinates
 analysis <- function(
     ...,
     city_measurements,
@@ -712,7 +691,6 @@ analysis <- function(
 }
 
 
-#' @importFrom dplyr filter
 pass_count <- function(df) {
   total <- nrow(df)
   pass_who <- nrow(df %>% filter(pass_who))
