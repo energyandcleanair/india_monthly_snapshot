@@ -44,4 +44,6 @@
 #' @importFrom tidyr
 #'    replace_na
 #'    pivot_wider
+#' @importFrom lubridate
+#'    is.Date
 NULL
