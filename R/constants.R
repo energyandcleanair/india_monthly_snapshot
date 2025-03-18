@@ -19,7 +19,7 @@ grap_scales_pm25 <- c(
   "Moderate" = 90,
   "Poor" = 120,
   "Very Poor" = 250,
-  "Severe" = 500
+  "Severe" = 1500
 )
 
 grap_colors_pm25 <- c(
@@ -106,4 +106,12 @@ igp_states <- c(
   "Bihar",
   "Jharkhand",
   "West Bengal"
+)
+
+top5_populous_cities <- c(
+  "delhi_ind.25_1_in" = "Delhi",
+  "mumbai_ind.20_1_in" = "Mumbai",
+  "kolkata_ind.36_1_in" = "Kolkata",
+  "bangalore_ind.16_1_in" = "Bangalore",
+  "chennai_ind.31_1_in" = "Chennai"
 )
