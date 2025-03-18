@@ -8,6 +8,8 @@ analysis <- function(
     days_in_month,
     warnings) {
   measurements <- city_measurements
+  measurements_previous_years <- city_measurements_previous_years %>%
+    mutate(year = lubridate::year(date), month = lubridate::month(date))
   focus_year <- focus_month %>% lubridate::year()
 
   measurements_preset_ncap <- measurements %>%
@@ -73,7 +75,7 @@ analysis <- function(
     bind_rows() %>%
     select(name, location_id, everything())
 
-
+  # TODO move out
   get_compliance_frequency_breaks <- function(days_in_month) {
     return(c(days_in_month * c(-0.01, 0.01, 0.25, 0.5, 0.75, 0.99, 1)))
   }
@@ -388,8 +390,7 @@ analysis <- function(
     select(location_id) %>%
     pull()
 
-  measurements_prev <- city_measurements_previous_years %>%
-    filter(city_id %in% cities_prev, lubridate::year(date) == focus_year - 1) %>%
+  measurements_previous_years <- measurements_previous_years %>%
     mutate(
       pass_who = value <= who_pm25_standard,
       pass_naaqs = value <= naaqs_pm25_standard,
@@ -400,8 +401,8 @@ analysis <- function(
       )
     )
 
-  measurements_prev_summary <- measurements_prev %>%
-    group_by(location_id, city_name, pollutant, pollutant_name, gadm1_name) %>%
+  measurements_previous_years_summary <- measurements_previous_years %>%
+    group_by(location_id, city_name, pollutant, pollutant_name, gadm1_name, month, year) %>%
     summarise(mean = mean(value, na.rm = TRUE)) %>%
     ungroup() %>%
     mutate(
@@ -414,8 +415,8 @@ analysis <- function(
       )
     )
 
-  measurements_prev_grap <- measurements_prev %>%
-    group_by(location_id, grap_cat) %>%
+  measurements_previous_years_grap <- measurements_previous_years %>%
+    group_by(location_id, grap_cat, month, year) %>%
     summarise(count = n()) %>%
     ungroup() %>%
     pivot_wider(names_from = grap_cat, values_from = count, values_fill = list(count = 0)) %>%
@@ -425,33 +426,42 @@ analysis <- function(
       "Poor", "Very Poor"
     )))))
 
-  monthly_cities_compliance_prev <- lapply(
-    measurements_prev %>% distinct(location_id) %>% pull(),
+  monthly_cities_compliance_previous_years <- lapply(
+    measurements_previous_years %>% distinct(location_id) %>% pull(),
     function(loc) {
-      pass_count(
-        measurements_prev %>%
-          filter(location_id == loc)
+      lapply(
+        measurements_previous_years %>% distinct(year) %>% pull(),
+        function(yr) {
+          pass_count(
+            measurements_previous_years %>%
+              filter(location_id == loc, year == yr)
+          ) %>%
+            mutate(year = yr)
+        }
       ) %>%
+        bind_rows() %>%
         mutate(location_id = loc)
-    }
-  ) %>%
+    }) %>%
     bind_rows() %>%
     mutate(`% days > NAAQS` = round(not_pass_naaqs / total * 100, 0)) %>%
-    select(location_id, `% days > NAAQS`)
+    select(location_id, year, not_pass_naaqs, `% days > NAAQS`)
 
-  measurements_top10_polluted_cities_prev <- measurements_prev_summary %>%
-    select(location_id, city_name, mean) %>%
-    left_join(measurements_prev_grap, by = "location_id") %>%
-    left_join(monthly_cities_compliance_prev, by = "location_id")
-  write.csv(measurements_top10_polluted_cities_prev,
-    file.path(get_dir("output"), "top10_polluted_cities_prev.csv"),
-    row.names = FALSE
+  measurements_top10_polluted_cities_previous <- measurements_previous_years_summary %>%
+    filter(year == focus_year - 1, location_id %in% cities_prev) %>%
+    select(location_id, city_name, month, year, mean) %>%
+    left_join(measurements_previous_years_grap %>% filter(year == focus_year - 1),
+              by = c("location_id", "month", "year")) %>%
+    left_join(monthly_cities_compliance_previous_years %>% filter(year == focus_year - 1),
+              by = c("location_id", "year"))
+  write.csv(measurements_top10_polluted_cities_previous,
+            file.path(get_dir("output"), "top10_polluted_cities_prev.csv"),
+            row.names = FALSE
   )
 
   p <- ggplot(
     bind_rows(
-      measurements_top10_polluted_cities %>% mutate(year = year(focus_month)),
-      measurements_top10_polluted_cities_prev %>% mutate(year = year(focus_month) - 1)
+      measurements_top10_polluted_cities %>% mutate(year = focus_year),
+      measurements_top10_polluted_cities_previous
     ),
     aes(
       x = factor(city_name, levels = measurements_top10_polluted_cities %>% pull(city_name)),
@@ -685,12 +695,56 @@ analysis <- function(
     plot = p,
     scale = 1.5
   )
+
+  measurements_5_cities_summary <- measurements_preset_ncap_summary %>%
+    filter(location_id %in% names(top5_populous_cities)) %>%
+    select(location_id, city_name, mean) %>%
+    left_join(measurements_grap,
+              by = c("location_id")) %>%
+    left_join(monthly_cities_compliance,
+              by = c("location_id")) %>%
+    mutate(month = lubridate::month(focus_month),
+           year = focus_year)
+
+  measurements_5_cities_summary_previous <- measurements_previous_years_summary %>%
+    filter(location_id %in% names(top5_populous_cities)) %>%
+    select(location_id, city_name, month, year, mean) %>%
+    left_join(measurements_previous_years_grap,
+              by = c("location_id", "month", "year")) %>%
+    left_join(monthly_cities_compliance_previous_years,
+              by = c("location_id", "year"))
+
+  measurements_5_cities_summary_all <- bind_rows(measurements_5_cities_summary, measurements_5_cities_summary_previous)
+  write.csv(measurements_5_cities_summary_all,
+            file.path(get_dir("output"), "top5_populous_cities.csv"),
+            row.names = FALSE
+  )
+
+  measurements_5_cities_all <- measurements %>%
+    bind_rows(city_measurements_previous_years) %>%
+    filter(location_id %in% names(top5_populous_cities))
+
+  sapply(top5_populous_cities, function(city){
+    plot_data <- measurements_5_cities_all %>%
+      filter(city_name == city)
+    plot_pm25(
+      city_name = city,
+      data = plot_data,
+      value = 'value',
+      year_range = min(lubridate::year(plot_data$date)) : max(lubridate::year(plot_data$date)),
+      month_range = lubridate::month(focus_month),
+      layout_dims = c(lubridate::year(plot_data$date) %>% unique %>% length, 1),
+      file_name = file.path(get_dir("output"), paste0(city, "_pm25_calendar.png"))
+    )
+  })
+
   # add warning for cities with no coordinates
   measurements_preset_ncap_summary %>%
     filter(is.na(latitude) | is.na(longitude))
 }
 
 
+#' @importFrom dplyr filter
 pass_count <- function(df) {
   total <- nrow(df)
   pass_who <- nrow(df %>% filter(pass_who))
@@ -722,4 +776,34 @@ pass_count <- function(df) {
     not_pass_naaqs = not_pass_naaqs,
     not_pass_naaqs2 = not_pass_naaqs2
   ))
+}
+
+
+#' Title
+#'
+#' @param city_name
+#' @param data
+#' @param year_range
+#' @param month_range
+#' @param layout_dims
+#' @param file_name
+#'
+#' @return
+#' @export
+plot_pm25 <- function(city_name, data, year_range, month_range, layout_dims, file_name, value) {
+  plot <- openair::calendarPlot(data,
+                                pollutant = value,
+                                year = year_range,
+                                month = month_range,
+                                breaks = c(0, 30, 60, 90, 120, 250, 10000),
+                                cols = c("forestgreen", "light green", "yellow", "orange", "red", "dark red"),
+                                labels = c("0-30", "31-60", "61-90", "91-120", "121-250", ">250"),
+                                lim = 60,
+                                w.shift = 2,
+                                col.lim = c("black", "white"),
+                                layout = layout_dims,  # Use the specified layout
+                                main = paste(city_name, "Daily PM2.5 Concentration (µg/m3)"))
+  png(file_name, width = 1700, height = 900)
+  print(plot)
+  dev.off()
 }
