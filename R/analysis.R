@@ -116,7 +116,8 @@ analysis <- function(
     theme_void() +
     coord_polar("y", start = 0) +
     # rcrea::scale_fill_crea_d() +
-    scale_fill_manual(values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#cc0000", "#990000")) +
+    scale_fill_manual(values = c("#27a59c", "#c4d66c", "#FFE599",
+                                 "#f6b26b", "#cc0000", "#990000")) +
     geom_text(aes(label = value),
       position = position_stack(vjust = 0.5)
     ) +
@@ -142,7 +143,8 @@ analysis <- function(
     theme_void() +
     coord_polar("y", start = 0) +
     # rcrea::scale_fill_crea_d() +
-    scale_fill_manual(values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#cc0000", "#990000")) +
+    scale_fill_manual(values = c("#27a59c", "#c4d66c", "#FFE599",
+                                 "#f6b26b", "#cc0000", "#990000")) +
     geom_text(aes(label = value),
       position = position_stack(vjust = 0.5)
     ) +
@@ -181,7 +183,8 @@ analysis <- function(
     theme_void() +
     coord_polar("y", start = 0) +
     # rcrea::scale_fill_crea_d() +
-    scale_fill_manual(values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#cc0000", "#990000")) +
+    scale_fill_manual(values = c("#27a59c", "#c4d66c", "#FFE599",
+                                 "#f6b26b", "#cc0000", "#990000")) +
     geom_text(aes(label = value),
       position = position_stack(vjust = 0.5)
     ) +
@@ -207,7 +210,8 @@ analysis <- function(
     theme_void() +
     coord_polar("y", start = 0) +
     # rcrea::scale_fill_crea_d() +
-    scale_fill_manual(values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#cc0000", "#990000")) +
+    scale_fill_manual(values = c("#27a59c", "#c4d66c", "#FFE599",
+                                 "#f6b26b", "#cc0000", "#990000")) +
     geom_text(aes(label = value),
       position = position_stack(vjust = 0.5)
     ) +
