@@ -116,8 +116,10 @@ analysis <- function(
     theme_void() +
     coord_polar("y", start = 0) +
     # rcrea::scale_fill_crea_d() +
-    scale_fill_manual(values = c("#27a59c", "#c4d66c", "#FFE599",
-                                 "#f6b26b", "#cc0000", "#990000")) +
+    scale_fill_manual(values = c(
+      "#27a59c", "#c4d66c", "#FFE599",
+      "#f6b26b", "#cc0000", "#990000"
+    )) +
     geom_text(aes(label = value),
       position = position_stack(vjust = 0.5)
     ) +
@@ -143,8 +145,10 @@ analysis <- function(
     theme_void() +
     coord_polar("y", start = 0) +
     # rcrea::scale_fill_crea_d() +
-    scale_fill_manual(values = c("#27a59c", "#c4d66c", "#FFE599",
-                                 "#f6b26b", "#cc0000", "#990000")) +
+    scale_fill_manual(values = c(
+      "#27a59c", "#c4d66c", "#FFE599",
+      "#f6b26b", "#cc0000", "#990000"
+    )) +
     geom_text(aes(label = value),
       position = position_stack(vjust = 0.5)
     ) +
@@ -183,8 +187,10 @@ analysis <- function(
     theme_void() +
     coord_polar("y", start = 0) +
     # rcrea::scale_fill_crea_d() +
-    scale_fill_manual(values = c("#27a59c", "#c4d66c", "#FFE599",
-                                 "#f6b26b", "#cc0000", "#990000")) +
+    scale_fill_manual(values = c(
+      "#27a59c", "#c4d66c", "#FFE599",
+      "#f6b26b", "#cc0000", "#990000"
+    )) +
     geom_text(aes(label = value),
       position = position_stack(vjust = 0.5)
     ) +
@@ -210,8 +216,10 @@ analysis <- function(
     theme_void() +
     coord_polar("y", start = 0) +
     # rcrea::scale_fill_crea_d() +
-    scale_fill_manual(values = c("#27a59c", "#c4d66c", "#FFE599",
-                                 "#f6b26b", "#cc0000", "#990000")) +
+    scale_fill_manual(values = c(
+      "#27a59c", "#c4d66c", "#FFE599",
+      "#f6b26b", "#cc0000", "#990000"
+    )) +
     geom_text(aes(label = value),
       position = position_stack(vjust = 0.5)
     ) +
@@ -476,9 +484,11 @@ analysis <- function(
     filter(year == focus_year - 1, location_id %in% cities_prev) %>%
     select(location_id, city_name, month, year, mean) %>%
     left_join(measurements_previous_years_grap %>% filter(year == focus_year - 1),
-              by = c("location_id", "month", "year")) %>%
+      by = c("location_id", "month", "year")
+    ) %>%
     left_join(monthly_cities_compliance_previous_years %>% filter(year == focus_year - 1),
-              by = c("location_id", "year"))
+      by = c("location_id", "year")
+    )
   write.csv(
     measurements_10_polluted_cities_previous,
     file.path(get_dir("output"), "top10_polluted_cities_prev.csv"),
@@ -727,19 +737,25 @@ analysis <- function(
     filter(location_id %in% names(top5_populous_cities)) %>%
     select(location_id, city_name, mean) %>%
     left_join(measurements_grap,
-              by = c("location_id")) %>%
+      by = c("location_id")
+    ) %>%
     left_join(monthly_cities_compliance,
-              by = c("location_id")) %>%
-    mutate(month = lubridate::month(focus_month),
-           year = focus_year)
+      by = c("location_id")
+    ) %>%
+    mutate(
+      month = lubridate::month(focus_month),
+      year = focus_year
+    )
 
   measurements_5_cities_summary_previous <- measurements_previous_years_summary %>%
     filter(location_id %in% names(top5_populous_cities)) %>%
     select(location_id, city_name, month, year, mean) %>%
     left_join(measurements_previous_years_grap,
-              by = c("location_id", "month", "year")) %>%
+      by = c("location_id", "month", "year")
+    ) %>%
     left_join(monthly_cities_compliance_previous_years,
-              by = c("location_id", "year"))
+      by = c("location_id", "year")
+    )
 
   measurements_5_cities_summary_all <- bind_rows(
     measurements_5_cities_summary,
@@ -756,7 +772,6 @@ analysis <- function(
     filter(location_id %in% names(top5_populous_cities))
 
   sapply(top5_populous_cities, function(city) {
-
     n_years <- length(unique(lubridate::year(measurements_5_cities_all$date)))
     n_rows <- 2
     col_dim <- ceiling(n_years / n_rows)
@@ -769,7 +784,7 @@ analysis <- function(
       city_name = city,
       data = plot_data,
       value = "value",
-      year_range = min(lubridate::year(plot_data$date)) : max(lubridate::year(plot_data$date)),
+      year_range = min(lubridate::year(plot_data$date)):max(lubridate::year(plot_data$date)),
       month_range = lubridate::month(focus_month),
       layout_dims = layout_dims,
       file_name = file.path(get_dir("output"), paste0("pm25_calendar_", city, ".png"))
@@ -829,15 +844,14 @@ pass_count <- function(df) {
 #' @return
 #' @export
 plot_pm25 <- function(
-  ...,
-  city_name,
-  data,
-  year_range,
-  month_range,
-  layout_dims,
-  file_name,
-  value
-) {
+    ...,
+    city_name,
+    data,
+    year_range,
+    month_range,
+    layout_dims,
+    file_name,
+    value) {
   plot <- openair::calendarPlot(
     data,
     pollutant = value,
@@ -845,22 +859,25 @@ plot_pm25 <- function(
     month = month_range,
     annotate = "date", # Limits don't work when set to date.
     breaks = c(0, 30, 60, 90, 120, 250, Inf),
-    cols = c("forestgreen", "light green", "yellow",
-              "orange", "red", "dark red"),
+    cols = c(
+      "forestgreen", "light green", "yellow",
+      "orange", "red", "dark red"
+    ),
     labels = c("0-30", "31-60", "61-90", "91-120", "121-250", ">250"),
     w.shift = 2,
-    layout = layout_dims,  # Use the specified layout
+    layout = layout_dims, # Use the specified layout
     main = paste(city_name, "Daily PM2.5 Concentration (µg/m3)"),
-    par.strip.text = list(cex = 0.75),
+    cex.date = 0.5,
+    par.strip.text = list(cex = 0.50),
     par.settings = list(
-      layout.heights = list(strip = 3.5),
-      par.main.text = list(cex = 1),       # Main title
-      axis.text = list(cex = 0.75)            # Axis tick labels
+      layout.heights = list(strip = 2),
+      par.main.text = list(cex = 0.7), # Main title
+      axis.text = list(cex = 0.5) # Axis tick labels
     )
   )
   # The font size inside the boxes can't be set directly when using openair::calendarPlot,
   # so we need to set the plot size to a large value.
-  png(file_name, width = 2550, height = 1350, res = 150)
+  png(file_name, width = 1700, height = 900, res = 150)
   print(plot)
   dev.off()
 }

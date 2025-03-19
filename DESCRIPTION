@@ -41,10 +41,12 @@ Imports:
     R6,
     units,
     ggspatial,
-    validate
+    validate,
+    openair
 Remotes:
     energyandcleanair/creahelpers,
-    energyandcleanair/rcrea
+    energyandcleanair/rcrea,
+    TickleThePanda/openair@calendar-plot-date-cex-arg
 RoxygenNote: 7.3.2
 Suggests:
     testthat,
