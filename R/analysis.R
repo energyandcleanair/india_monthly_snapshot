@@ -441,27 +441,29 @@ analysis <- function(
       ) %>%
         bind_rows() %>%
         mutate(location_id = loc)
-    }) %>%
+    }
+  ) %>%
     bind_rows() %>%
     mutate(`% days > NAAQS` = round(not_pass_naaqs / total * 100, 0)) %>%
     select(location_id, year, not_pass_naaqs, `% days > NAAQS`)
 
-  measurements_top10_polluted_cities_previous <- measurements_previous_years_summary %>%
+  measurements_10_polluted_cities_previous <- measurements_previous_years_summary %>%
     filter(year == focus_year - 1, location_id %in% cities_prev) %>%
     select(location_id, city_name, month, year, mean) %>%
     left_join(measurements_previous_years_grap %>% filter(year == focus_year - 1),
               by = c("location_id", "month", "year")) %>%
     left_join(monthly_cities_compliance_previous_years %>% filter(year == focus_year - 1),
               by = c("location_id", "year"))
-  write.csv(measurements_top10_polluted_cities_previous,
-            file.path(get_dir("output"), "top10_polluted_cities_prev.csv"),
-            row.names = FALSE
+  write.csv(
+    measurements_10_polluted_cities_previous,
+    file.path(get_dir("output"), "top10_polluted_cities_prev.csv"),
+    row.names = FALSE
   )
 
   p <- ggplot(
     bind_rows(
       measurements_top10_polluted_cities %>% mutate(year = focus_year),
-      measurements_top10_polluted_cities_previous
+      measurements_10_polluted_cities_previous
     ),
     aes(
       x = factor(city_name, levels = measurements_top10_polluted_cities %>% pull(city_name)),
@@ -714,23 +716,27 @@ analysis <- function(
     left_join(monthly_cities_compliance_previous_years,
               by = c("location_id", "year"))
 
-  measurements_5_cities_summary_all <- bind_rows(measurements_5_cities_summary, measurements_5_cities_summary_previous)
-  write.csv(measurements_5_cities_summary_all,
-            file.path(get_dir("output"), "top5_populous_cities.csv"),
-            row.names = FALSE
+  measurements_5_cities_summary_all <- bind_rows(
+    measurements_5_cities_summary,
+    measurements_5_cities_summary_previous
+  )
+  write.csv(
+    measurements_5_cities_summary_all,
+    file.path(get_dir("output"), "top5_populous_cities.csv"),
+    row.names = FALSE
   )
 
   measurements_5_cities_all <- measurements %>%
     bind_rows(city_measurements_previous_years) %>%
     filter(location_id %in% names(top5_populous_cities))
 
-  sapply(top5_populous_cities, function(city){
+  sapply(top5_populous_cities, function(city) {
     plot_data <- measurements_5_cities_all %>%
       filter(city_name == city)
     plot_pm25(
       city_name = city,
       data = plot_data,
-      value = 'value',
+      value = "value",
       year_range = min(lubridate::year(plot_data$date)) : max(lubridate::year(plot_data$date)),
       month_range = lubridate::month(focus_month),
       layout_dims = c(lubridate::year(plot_data$date) %>% unique %>% length, 1),
@@ -796,7 +802,8 @@ plot_pm25 <- function(city_name, data, year_range, month_range, layout_dims, fil
                                 year = year_range,
                                 month = month_range,
                                 breaks = c(0, 30, 60, 90, 120, 250, 10000),
-                                cols = c("forestgreen", "light green", "yellow", "orange", "red", "dark red"),
+                                cols = c("forestgreen", "light green", "yellow",
+                                         "orange", "red", "dark red"),
                                 labels = c("0-30", "31-60", "61-90", "91-120", "121-250", ">250"),
                                 lim = 60,
                                 w.shift = 2,
