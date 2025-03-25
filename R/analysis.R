@@ -13,7 +13,8 @@ analysis <- function(
   focus_year <- focus_month %>% lubridate::year()
 
   measurements_preset_ncap <- measurements %>%
-    left_join(location_presets %>% filter(name == "ncap_cities"),
+    left_join(
+      location_presets %>% filter(name == "ncap_cities"),
       by = "location_id",
       relationship = "many-to-one"
     ) %>%
@@ -22,7 +23,8 @@ analysis <- function(
       pass_who = value <= who_pm25_standard,
       pass_naaqs = value <= naaqs_pm25_standard,
       pass_naaqs2 = value <= 2 * naaqs_pm25_standard,
-      grap_cat = cut(value,
+      grap_cat = cut(
+        value,
         breaks = c(0, unlist(unname(grap_scales_pm25))),
         labels = names(grap_scales_pm25)
       )
@@ -36,7 +38,8 @@ analysis <- function(
       pass_who = mean <= who_pm25_standard,
       pass_naaqs = mean <= naaqs_pm25_standard,
       pass_naaqs2 = mean <= 2 * naaqs_pm25_standard,
-      grap_cat = cut(mean,
+      grap_cat = cut(
+        mean,
         breaks = c(0, unlist(unname(grap_scales_pm25))),
         labels = names(grap_scales_pm25)
       )
@@ -54,7 +57,8 @@ analysis <- function(
   ) %>%
     bind_rows() %>%
     select(name, everything())
-  write.csv(monthly_compliance, file.path(get_dir("output"), "monthly_compliance.csv"),
+  write.csv(
+    monthly_compliance, file.path(get_dir("output"), "monthly_compliance.csv"),
     row.names = FALSE
   )
 
@@ -62,11 +66,13 @@ analysis <- function(
   daily_compliance <- measurements_preset_ncap %>%
     distinct(location_id, name) %>%
     apply(1, function(row) {
-      pass_count(measurements_preset_ncap %>%
-        filter(
-          location_id == row["location_id"],
-          name == row["name"]
-        )) %>%
+      pass_count(
+        measurements_preset_ncap %>%
+          filter(
+            location_id == row["location_id"],
+            name == row["name"]
+          )
+      ) %>%
         mutate(
           location_id = row["location_id"],
           name = row["name"]
@@ -82,11 +88,13 @@ analysis <- function(
 
   day_freq_standard <- daily_compliance %>%
     mutate(
-      pass_who_cut = cut(not_pass_who,
+      pass_who_cut = cut(
+        not_pass_who,
         breaks = get_compliance_frequency_breaks(days_in_month),
         labels = c("0%", "25%", "50%", "75%", "99%", "100%")
       ),
-      pass_naaqs_cut = cut(not_pass_naaqs,
+      pass_naaqs_cut = cut(
+        not_pass_naaqs,
         breaks = get_compliance_frequency_breaks(days_in_month),
         labels = c("0%", "25%", "50%", "75%", "99%", "100%")
       )
@@ -112,19 +120,21 @@ analysis <- function(
   ) +
     geom_col(show.legend = FALSE) +
     xlim(c(0.2, 2.5)) +
-    geom_text(aes(label = ifelse(value == 0, NA, value)),
-              position = position_stack(vjust = 0.5)
+    geom_text(
+      aes(label = ifelse(value == 0, NA, value)),
+      position = position_stack(vjust = 0.5)
     ) +
     labs(
       title = "Categorisation of NCAP cities \nagainst compliance to NAAQS guidelines"
     ) +
-    annotate("text",
-             x = 0.25, y = 0,
-             label = day_freq_naaqs_summary %>%
-               filter(name == "ncap_cities") %>%
-               pull(value) %>%
-               sum(),
-             size = 4, fontface = "bold"
+    annotate(
+      "text",
+      x = 0.25, y = 0,
+      label = day_freq_naaqs_summary %>%
+        filter(name == "ncap_cities") %>%
+        pull(value) %>%
+        sum(),
+      size = 4, fontface = "bold"
     ) +
     rcrea::theme_crea_new() +
     theme_void() +
@@ -133,9 +143,7 @@ analysis <- function(
       "#27a59c", "#c4d66c", "#FFE599",
       "#f6b26b", "#cc0000", "#990000"
     )) +
-    theme(
-      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
-    )
+    theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
 
   day_freq_naaqs_nonncap_plot <- ggplot(
     day_freq_naaqs_summary %>% filter(name == "non_ncap_cities"),
@@ -143,19 +151,21 @@ analysis <- function(
   ) +
     geom_col(show.legend = FALSE) +
     xlim(c(0.2, 2.5)) +
-    geom_text(aes(label = ifelse(value == 0, NA, value)),
-              position = position_stack(vjust = 0.5)
+    geom_text(
+      aes(label = ifelse(value == 0, NA, value)),
+      position = position_stack(vjust = 0.5)
     ) +
     labs(
       title = "Categorisation of non-NCAP cities \nagainst compliance to NAAQS guidelines"
     ) +
-    annotate("text",
-             x = 0.25, y = 0,
-             label = day_freq_naaqs_summary %>%
-               filter(name == "non_ncap_cities") %>%
-               pull(value) %>%
-               sum(),
-             size = 4, fontface = "bold"
+    annotate(
+      "text",
+      x = 0.25, y = 0,
+      label = day_freq_naaqs_summary %>%
+        filter(name == "non_ncap_cities") %>%
+        pull(value) %>%
+        sum(),
+      size = 4, fontface = "bold"
     ) +
     rcrea::theme_crea_new() +
     theme_void() +
@@ -164,9 +174,7 @@ analysis <- function(
       "#27a59c", "#c4d66c", "#FFE599",
       "#f6b26b", "#cc0000", "#990000"
     )) +
-    theme(
-      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
-    )
+    theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
 
   day_freq_who_summary <- day_freq_standard %>%
     group_by(name, pass_who_cut) %>%
@@ -189,18 +197,19 @@ analysis <- function(
     xlim(c(0.2, 2.5)) +
     geom_text(
       aes(label = ifelse(value == 0, NA, value)),
-              position = position_stack(vjust = 0.5)
+      position = position_stack(vjust = 0.5)
     ) +
     labs(
       title = "Categorisation of NCAP cities \nagainst compliance to WHO guidelines"
     ) +
-    annotate("text",
-             x = 0.25, y = 0,
-             label = day_freq_who_summary %>%
-               filter(name == "ncap_cities") %>%
-               pull(value) %>%
-               sum(),
-             size = 4, fontface = "bold"
+    annotate(
+      "text",
+      x = 0.25, y = 0,
+      label = day_freq_who_summary %>%
+        filter(name == "ncap_cities") %>%
+        pull(value) %>%
+        sum(),
+      size = 4, fontface = "bold"
     ) +
     rcrea::theme_crea_new() +
     theme_void() +
@@ -209,9 +218,7 @@ analysis <- function(
       "#27a59c", "#c4d66c", "#FFE599",
       "#f6b26b", "#cc0000", "#990000"
     )) +
-    theme(
-      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
-    )
+    theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
 
   day_freq_who_nonncap_plot <- ggplot(
     day_freq_who_summary %>% filter(name == "non_ncap_cities"),
@@ -219,20 +226,22 @@ analysis <- function(
   ) +
     geom_col() +
     xlim(c(0.2, 2.5)) +
-    geom_text(aes(label = ifelse(value == 0, NA, value)),
-              position = position_stack(vjust = 0.5)
+    geom_text(
+      aes(label = ifelse(value == 0, NA, value)),
+      position = position_stack(vjust = 0.5)
     ) +
     labs(
       fill = "",
       title = "Categorisation of non-NCAP cities \nagainst compliance to NAAQS guidelines"
     ) +
-    annotate("text",
-             x = 0.25, y = 0,
-             label = day_freq_who_summary %>%
-               filter(name == "non_ncap_cities") %>%
-               pull(value) %>%
-               sum(),
-             size = 4, fontface = "bold"
+    annotate(
+      "text",
+      x = 0.25, y = 0,
+      label = day_freq_who_summary %>%
+        filter(name == "non_ncap_cities") %>%
+        pull(value) %>%
+        sum(),
+      size = 4, fontface = "bold"
     ) +
     rcrea::theme_crea_new() +
     theme_void() +
@@ -241,9 +250,7 @@ analysis <- function(
       "#27a59c", "#c4d66c", "#FFE599",
       "#f6b26b", "#cc0000", "#990000"
     )) +
-    theme(
-      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
-    )
+    theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
 
   legend <- cowplot::get_legend(day_freq_who_nonncap_plot)
 
@@ -273,11 +280,10 @@ analysis <- function(
     theme_void() +
     coord_polar("y", start = 0) +
     rcrea::scale_fill_crea_d() +
-    theme(
-      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
-    )
+    theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
 
-  final_plot <- plot_grid(day_freq_naaqs_nonncap_plot, cities_plot, day_freq_naaqs_ncap_plot,
+  final_plot <- plot_grid(
+    day_freq_naaqs_nonncap_plot, cities_plot, day_freq_naaqs_ncap_plot,
     day_freq_who_nonncap_plot, legend, day_freq_who_ncap_plot,
     ncol = 3
   )
@@ -296,6 +302,7 @@ analysis <- function(
     )
   ) %>%
     sf::st_make_valid()
+
   sf::sf_use_s2(FALSE)
   india_boundary_centroids <- sf::st_centroid(india_boundary)
   sf::sf_use_s2(TRUE)
@@ -304,11 +311,7 @@ analysis <- function(
     layer_spatial(data = india_boundary, fill = "white") +
     geom_text(
       data = india_boundary_centroids,
-      aes(
-        x = st_coordinates(geometry)[, 1],
-        y = st_coordinates(geometry)[, 2],
-        label = stname
-      ),
+      aes(x = st_coordinates(geometry)[, 1], y = st_coordinates(geometry)[, 2], label = stname),
       size = 2
     ) +
     layer_spatial(
@@ -325,10 +328,7 @@ analysis <- function(
       legend.direction = "horizontal",
       legend.title = element_blank()
     )
-  quicksave(file.path(get_dir("output"), "cities_grap_distribution.png"),
-    plot = p,
-    scale = 1.5
-  )
+  quicksave(file.path(get_dir("output"), "cities_grap_distribution.png"), plot = p, scale = 1.5)
 
   measurements_preset_ncap_province <- measurements_preset_ncap_summary %>%
     group_by(gadm1_name, grap_cat) %>%
@@ -336,7 +336,8 @@ analysis <- function(
     ungroup() %>%
     pivot_wider(names_from = grap_cat, values_from = count, values_fill = list(count = 0)) %>%
     rename(`State/UT` = gadm1_name)
-  write.csv(measurements_preset_ncap_province,
+  write.csv(
+    measurements_preset_ncap_province,
     file.path(get_dir("output"), "cities_grap_distribution.csv"),
     row.names = FALSE
   )
@@ -349,8 +350,7 @@ analysis <- function(
     pivot_wider(names_from = grap_cat, values_from = count, values_fill = list(count = 0)) %>%
     rowwise() %>%
     mutate(monitored_days = sum(across(any_of(c(
-      "Good", "Satisfactory", "Moderate",
-      "Poor", "Very Poor"
+      "Good", "Satisfactory", "Moderate", "Poor", "Very Poor"
     )))))
 
 
@@ -374,7 +374,8 @@ analysis <- function(
     select(location_id, city_name, gadm1_name, mean) %>%
     left_join(measurements_grap, by = "location_id") %>%
     left_join(monthly_cities_compliance, by = "location_id")
-  write.csv(measurements_top10_polluted_cities,
+  write.csv(
+    measurements_top10_polluted_cities,
     file.path(get_dir("output"), "top10_polluted_cities.csv"),
     row.names = FALSE
   )
@@ -388,7 +389,8 @@ analysis <- function(
     scale_fill_viridis_c() +
     theme_crea() +
     labs(
-      title = glue("Top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
+      title = glue(
+        "Top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
       x = "City",
@@ -407,7 +409,8 @@ analysis <- function(
     select(location_id, city_name, mean) %>%
     left_join(measurements_grap, by = "location_id") %>%
     left_join(monthly_cities_compliance, by = "location_id")
-  write.csv(measurements_top10_polluted_cities,
+  write.csv(
+    measurements_top10_polluted_cities,
     file.path(get_dir("output"), "top10_cleanest_cities.csv"),
     row.names = FALSE
   )
@@ -421,7 +424,8 @@ analysis <- function(
     scale_fill_viridis_c() +
     theme_crea() +
     labs(
-      title = glue("Top 10 most cleanest cities in India by PM2.5 concentration - {month_year}",
+      title = glue(
+        "Top 10 most cleanest cities in India by PM2.5 concentration - {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
       x = "City",
@@ -444,7 +448,8 @@ analysis <- function(
       pass_who = value <= who_pm25_standard,
       pass_naaqs = value <= naaqs_pm25_standard,
       pass_naaqs2 = value <= 2 * naaqs_pm25_standard,
-      grap_cat = cut(value,
+      grap_cat = cut(
+        value,
         breaks = c(0, unlist(unname(grap_scales_pm25))),
         labels = names(grap_scales_pm25)
       )
@@ -459,8 +464,8 @@ analysis <- function(
       pass_naaqs = mean <= naaqs_pm25_standard,
       pass_naaqs2 = mean <= 2 * naaqs_pm25_standard,
       grap_cat = cut(mean,
-        breaks = c(0, unlist(unname(grap_scales_pm25))),
-        labels = names(grap_scales_pm25)
+                     breaks = c(0, unlist(unname(grap_scales_pm25))),
+                     labels = names(grap_scales_pm25)
       )
     )
 
@@ -471,8 +476,7 @@ analysis <- function(
     pivot_wider(names_from = grap_cat, values_from = count, values_fill = list(count = 0)) %>%
     rowwise() %>%
     mutate(monitored_days = sum(across(any_of(c(
-      "Good", "Satisfactory", "Moderate",
-      "Poor", "Very Poor"
+      "Good", "Satisfactory", "Moderate", "Poor", "Very Poor"
     )))))
 
   monthly_cities_compliance_previous_years <- lapply(
@@ -499,10 +503,12 @@ analysis <- function(
   measurements_10_polluted_cities_previous <- measurements_previous_years_summary %>%
     filter(year == focus_year - 1, location_id %in% cities_prev) %>%
     select(location_id, city_name, month, year, mean) %>%
-    left_join(measurements_previous_years_grap %>% filter(year == focus_year - 1),
+    left_join(
+      measurements_previous_years_grap %>% filter(year == focus_year - 1),
       by = c("location_id", "month", "year")
     ) %>%
-    left_join(monthly_cities_compliance_previous_years %>% filter(year == focus_year - 1),
+    left_join(
+      monthly_cities_compliance_previous_years %>% filter(year == focus_year - 1),
       by = c("location_id", "year")
     )
   write.csv(
@@ -524,7 +530,8 @@ analysis <- function(
     geom_bar(position = "dodge", stat = "identity") +
     theme_crea() +
     labs(
-      title = glue("Top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
+      title = glue(
+        "Top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
       x = "City",
@@ -550,16 +557,16 @@ analysis <- function(
     summarise(count = n()) %>%
     arrange(desc(count))
 
-  p <- ggplot(measurements_preset_ncap_top10_count, aes(
-    x = factor(city_name, levels = city_name),
-    y = count,
-    fill = count
-  )) +
+  p <- ggplot(
+    measurements_preset_ncap_top10_count,
+    aes(x = factor(city_name, levels = city_name), y = count, fill = count)
+  ) +
     geom_col() +
     scale_fill_viridis_c() +
     theme_crea() +
     labs(
-      title = glue("Top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
+      title = glue(
+        "Top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
       x = "City",
@@ -581,7 +588,9 @@ analysis <- function(
       distinct(gadm1_name) %>%
       pull()
   )
+
   expected_number_of_states <- 26
+
   if (actual_number_of_states != expected_number_of_states) {
     warnings$add_warning("wrong_state_number", paste(
       "Number of states in India in analysis was",
@@ -591,11 +600,14 @@ analysis <- function(
     ))
   }
 
-  p <- ggplot(measurements_top_city_province, aes(
-    x = factor(gadm1_name, levels = measurements_top_city_province %>% pull(gadm1_name)),
-    y = mean,
-    fill = mean
-  )) +
+  p <- ggplot(
+    measurements_top_city_province,
+    aes(
+      x = factor(gadm1_name, levels = measurements_top_city_province %>% pull(gadm1_name)),
+      y = mean,
+      fill = mean
+    )
+  ) +
     geom_col() +
     scale_fill_viridis_c() +
     theme_crea() +
@@ -633,11 +645,13 @@ analysis <- function(
     ungroup() %>%
     arrange(desc(mean))
 
-  p <- ggplot(measurements_capitals_summary, aes(
-    x = factor(city_name, levels = measurements_capitals_summary %>% pull(city_name)),
-    y = mean,
-    fill = mean
-  )) +
+  p <- ggplot(
+    measurements_capitals_summary, aes(
+      x = factor(city_name, levels = measurements_capitals_summary %>% pull(city_name)),
+      y = mean,
+      fill = mean
+    )
+  ) +
     geom_col() +
     scale_fill_viridis_c() +
     theme_crea() +
@@ -665,7 +679,8 @@ analysis <- function(
 
 
   measurements_preset_igp_summary <- measurements %>%
-    left_join(location_presets %>% filter(name == "igp_cities"),
+    left_join(
+      location_presets %>% filter(name == "igp_cities"),
       by = "location_id",
       relationship = "many-to-one"
     ) %>%
@@ -676,20 +691,23 @@ analysis <- function(
     ungroup() %>%
     arrange(desc(mean)) %>%
     left_join(
-      cities %>%
-        select(id, latitude, longitude),
+      cities %>% select(id, latitude, longitude),
       by = c("location_id" = "id")
     ) %>%
-    mutate(grap_cat = cut(mean,
+    mutate(grap_cat = cut(
+      mean,
       breaks = c(0, unlist(unname(grap_scales_pm25))),
       labels = names(grap_scales_pm25)
     ))
 
-  p <- ggplot(measurements_preset_igp_summary, aes(
-    x = factor(city_name, levels = measurements_preset_igp_summary %>% pull(city_name)),
-    y = mean,
-    fill = mean
-  )) +
+  p <- ggplot(
+    measurements_preset_igp_summary,
+    aes(
+      x = factor(city_name, levels = measurements_preset_igp_summary %>% pull(city_name)),
+      y = mean,
+      fill = mean
+    )
+  ) +
     geom_col() +
     scale_fill_viridis_c() +
     theme_crea() +
@@ -723,11 +741,7 @@ analysis <- function(
     ) +
     geom_text(
       data = india_boundary_centroids %>% filter(tolower(stname) %in% tolower(igp_states)),
-      aes(
-        x = st_coordinates(geometry)[, 1],
-        y = st_coordinates(geometry)[, 2],
-        label = stname
-      ),
+      aes(x = st_coordinates(geometry)[, 1], y = st_coordinates(geometry)[, 2], label = stname),
       size = 2
     ) +
     layer_spatial(
@@ -744,20 +758,13 @@ analysis <- function(
       legend.direction = "horizontal",
       legend.title = element_blank()
     )
-  quicksave(file.path(get_dir("output"), "igp_cities_grap_distribution.png"),
-    plot = p,
-    scale = 1.5
-  )
+  quicksave(file.path(get_dir("output"), "igp_cities_grap_distribution.png"), plot = p, scale = 1.5)
 
   measurements_5_cities_summary <- measurements_preset_ncap_summary %>%
     filter(location_id %in% names(top5_populous_cities)) %>%
     select(location_id, city_name, mean) %>%
-    left_join(measurements_grap,
-      by = c("location_id")
-    ) %>%
-    left_join(monthly_cities_compliance,
-      by = c("location_id")
-    ) %>%
+    left_join(measurements_grap, by = c("location_id")) %>%
+    left_join(monthly_cities_compliance, by = c("location_id")) %>%
     mutate(
       month = lubridate::month(focus_month),
       year = focus_year
@@ -766,12 +773,8 @@ analysis <- function(
   measurements_5_cities_summary_previous <- measurements_previous_years_summary %>%
     filter(location_id %in% names(top5_populous_cities)) %>%
     select(location_id, city_name, month, year, mean) %>%
-    left_join(measurements_previous_years_grap,
-      by = c("location_id", "month", "year")
-    ) %>%
-    left_join(monthly_cities_compliance_previous_years,
-      by = c("location_id", "year")
-    )
+    left_join(measurements_previous_years_grap,by = c("location_id", "month", "year")) %>%
+    left_join(monthly_cities_compliance_previous_years, by = c("location_id", "year"))
 
   measurements_5_cities_summary_all <- bind_rows(
     measurements_5_cities_summary,
