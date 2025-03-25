@@ -81,11 +81,6 @@ analysis <- function(
     bind_rows() %>%
     select(name, location_id, everything())
 
-  # TODO move out
-  get_compliance_frequency_breaks <- function(days_in_month) {
-    return(c(days_in_month * c(-0.01, 0.01, 0.25, 0.5, 0.75, 0.99, 1)))
-  }
-
   day_freq_standard <- daily_compliance %>%
     mutate(
       pass_who_cut = cut(
@@ -899,4 +894,10 @@ plot_pm25 <- function(
   png(file_name, width = 1700, height = 900, res = 150)
   print(plot)
   dev.off()
+}
+
+
+
+get_compliance_frequency_breaks <- function(days_in_month) {
+  return(c(days_in_month * c(-0.01, 0.01, 0.25, 0.5, 0.75, 0.99, 1)))
 }
