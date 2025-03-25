@@ -112,27 +112,29 @@ analysis <- function(
   ) +
     geom_col(show.legend = FALSE) +
     xlim(c(0.2, 2.5)) +
-    theme_crea_new() +
+    geom_text(aes(label = ifelse(value == 0, NA, value)),
+              position = position_stack(vjust = 0.5)
+    ) +
+    labs(
+      title = "Categorisation of NCAP cities \nagainst compliance to NAAQS guidelines"
+    ) +
+    annotate("text",
+             x = 0.25, y = 0,
+             label = day_freq_naaqs_summary %>%
+               filter(name == "ncap_cities") %>%
+               pull(value) %>%
+               sum(),
+             size = 4, fontface = "bold"
+    ) +
+    rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
-    # rcrea::scale_fill_crea_d() +
     scale_fill_manual(values = c(
       "#27a59c", "#c4d66c", "#FFE599",
       "#f6b26b", "#cc0000", "#990000"
     )) +
-    geom_text(aes(label = value),
-      position = position_stack(vjust = 0.5)
-    ) +
-    labs(
-      title = "Categorisation of NCAP cities against compliance to NAAQS guidelines"
-    ) +
-    annotate("text",
-      x = 0.25, y = 0,
-      label = day_freq_naaqs_summary %>%
-        filter(name == "ncap_cities") %>%
-        pull(value) %>%
-        sum(),
-      size = 4, fontface = "bold"
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
     )
 
   day_freq_naaqs_nonncap_plot <- ggplot(
@@ -141,27 +143,29 @@ analysis <- function(
   ) +
     geom_col(show.legend = FALSE) +
     xlim(c(0.2, 2.5)) +
-    theme_crea_new() +
+    geom_text(aes(label = ifelse(value == 0, NA, value)),
+              position = position_stack(vjust = 0.5)
+    ) +
+    labs(
+      title = "Categorisation of non-NCAP cities \nagainst compliance to NAAQS guidelines"
+    ) +
+    annotate("text",
+             x = 0.25, y = 0,
+             label = day_freq_naaqs_summary %>%
+               filter(name == "non_ncap_cities") %>%
+               pull(value) %>%
+               sum(),
+             size = 4, fontface = "bold"
+    ) +
+    rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
-    # rcrea::scale_fill_crea_d() +
     scale_fill_manual(values = c(
       "#27a59c", "#c4d66c", "#FFE599",
       "#f6b26b", "#cc0000", "#990000"
     )) +
-    geom_text(aes(label = value),
-      position = position_stack(vjust = 0.5)
-    ) +
-    labs(
-      title = "Categorisation of non-NCAP cities against compliance to NAAQS guidelines"
-    ) +
-    annotate("text",
-      x = 0.25, y = 0,
-      label = day_freq_naaqs_summary %>%
-        filter(name == "non_ncap_cities") %>%
-        pull(value) %>%
-        sum(),
-      size = 4, fontface = "bold"
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
     )
 
   day_freq_who_summary <- day_freq_standard %>%
@@ -183,27 +187,30 @@ analysis <- function(
   ) +
     geom_col(show.legend = FALSE) +
     xlim(c(0.2, 2.5)) +
-    theme_crea_new() +
+    geom_text(
+      aes(label = ifelse(value == 0, NA, value)),
+              position = position_stack(vjust = 0.5)
+    ) +
+    labs(
+      title = "Categorisation of NCAP cities \nagainst compliance to WHO guidelines"
+    ) +
+    annotate("text",
+             x = 0.25, y = 0,
+             label = day_freq_who_summary %>%
+               filter(name == "ncap_cities") %>%
+               pull(value) %>%
+               sum(),
+             size = 4, fontface = "bold"
+    ) +
+    rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
-    # rcrea::scale_fill_crea_d() +
     scale_fill_manual(values = c(
       "#27a59c", "#c4d66c", "#FFE599",
       "#f6b26b", "#cc0000", "#990000"
     )) +
-    geom_text(aes(label = value),
-      position = position_stack(vjust = 0.5)
-    ) +
-    labs(
-      title = "Categorisation of NCAP cities against compliance to WHO guidelines"
-    ) +
-    annotate("text",
-      x = 0.25, y = 0,
-      label = day_freq_who_summary %>%
-        filter(name == "ncap_cities") %>%
-        pull(value) %>%
-        sum(),
-      size = 4, fontface = "bold"
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
     )
 
   day_freq_who_nonncap_plot <- ggplot(
@@ -212,31 +219,33 @@ analysis <- function(
   ) +
     geom_col() +
     xlim(c(0.2, 2.5)) +
-    theme_crea_new() +
+    geom_text(aes(label = ifelse(value == 0, NA, value)),
+              position = position_stack(vjust = 0.5)
+    ) +
+    labs(
+      fill = "",
+      title = "Categorisation of non-NCAP cities \nagainst compliance to NAAQS guidelines"
+    ) +
+    annotate("text",
+             x = 0.25, y = 0,
+             label = day_freq_who_summary %>%
+               filter(name == "non_ncap_cities") %>%
+               pull(value) %>%
+               sum(),
+             size = 4, fontface = "bold"
+    ) +
+    rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
-    # rcrea::scale_fill_crea_d() +
     scale_fill_manual(values = c(
       "#27a59c", "#c4d66c", "#FFE599",
       "#f6b26b", "#cc0000", "#990000"
     )) +
-    geom_text(aes(label = value),
-      position = position_stack(vjust = 0.5)
-    ) +
-    labs(
-      fill = "",
-      title = "Categorisation of non-NCAP cities against compliance to NAAQS guidelines"
-    ) +
-    annotate("text",
-      x = 0.25, y = 0,
-      label = day_freq_who_summary %>%
-        filter(name == "non_ncap_cities") %>%
-        pull(value) %>%
-        sum(),
-      size = 4, fontface = "bold"
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
     )
 
-  legend <- get_legend(day_freq_who_nonncap_plot)
+  legend <- cowplot::get_legend(day_freq_who_nonncap_plot)
 
   day_freq_who_nonncap_plot <- day_freq_who_nonncap_plot + theme(legend.position = "none")
 
@@ -246,20 +255,26 @@ analysis <- function(
   ) +
     geom_col(show.legend = FALSE) +
     xlim(c(0.2, 2.5)) +
-    theme_crea_new() +
+    geom_text(aes(label = total),
+              position = position_stack(vjust = 0.5)
+    ) +
+    labs(
+      fill = "",
+      title = "Total # of cities with >80% of the days \nwith CAAQMS data"
+    ) +
+    annotate("text",
+             x = 0.25, y = 0,
+             label = day_freq_naaqs_summary %>%
+               pull(value) %>%
+               sum(),
+             size = 4, fontface = "bold"
+    ) +
+    rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
     rcrea::scale_fill_crea_d() +
-    geom_text(aes(label = total),
-      position = position_stack(vjust = 0.5)
-    ) +
-    labs(fill = "") +
-    annotate("text",
-      x = 0.25, y = 0,
-      label = day_freq_naaqs_summary %>%
-        pull(value) %>%
-        sum(),
-      size = 6, fontface = "bold"
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
     )
 
   final_plot <- plot_grid(day_freq_naaqs_nonncap_plot, cities_plot, day_freq_naaqs_ncap_plot,
@@ -267,6 +282,7 @@ analysis <- function(
     ncol = 3
   )
   quicksave(file.path(get_dir("output"), "compliance.png"), plot = final_plot)
+
 
   cities <- fetch_cities_for_india() %>% select(id, longitude, latitude)
 
@@ -832,7 +848,7 @@ pass_count <- function(df) {
 }
 
 
-#' Title
+#' Calendar plot for PM2.5
 #'
 #' @param city_name
 #' @param data
@@ -841,7 +857,7 @@ pass_count <- function(df) {
 #' @param layout_dims
 #' @param file_name
 #'
-#' @return
+#' @return export a png with file_name
 #' @export
 plot_pm25 <- function(
     ...,
