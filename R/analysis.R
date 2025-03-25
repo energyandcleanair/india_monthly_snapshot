@@ -257,8 +257,9 @@ analysis <- function(
   ) +
     geom_col(show.legend = FALSE) +
     xlim(c(0.2, 2.5)) +
-    geom_text(aes(label = glue("{ncap_grouping_labels[name]} \n{total}")),
-              position = position_stack(vjust = 0.5)
+    geom_text(
+      aes(label = glue("{ncap_grouping_labels[name]} \n{total}")),
+      position = position_stack(vjust = 0.5)
     ) +
     labs(
       fill = "",
@@ -385,7 +386,7 @@ analysis <- function(
     measurements_top10_polluted_cities,
     aes(x = factor(city_name, levels = city_name), y = mean, fill = factor(mean))
   ) +
-    geom_bar(stat = 'identity') +
+    geom_col() +
     rcrea::scale_fill_crea_d() +
     rcrea::theme_crea_new() +
     labs(
@@ -470,9 +471,10 @@ analysis <- function(
       pass_who = mean <= who_pm25_standard,
       pass_naaqs = mean <= naaqs_pm25_standard,
       pass_naaqs2 = mean <= 2 * naaqs_pm25_standard,
-      grap_cat = cut(mean,
-                     breaks = c(0, unlist(unname(grap_scales_pm25))),
-                     labels = names(grap_scales_pm25)
+      grap_cat = cut(
+        mean,
+        breaks = c(0, unlist(unname(grap_scales_pm25))),
+        labels = names(grap_scales_pm25)
       )
     )
 
@@ -745,7 +747,8 @@ analysis <- function(
     ) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1),
-      legend.position = "none") +
+      legend.position = "none"
+    ) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_text(
@@ -806,7 +809,7 @@ analysis <- function(
   measurements_5_cities_summary_previous <- measurements_previous_years_summary %>%
     filter(location_id %in% names(top5_populous_cities)) %>%
     select(location_id, city_name, month, year, mean) %>%
-    left_join(measurements_previous_years_grap,by = c("location_id", "month", "year")) %>%
+    left_join(measurements_previous_years_grap, by = c("location_id", "month", "year")) %>%
     left_join(monthly_cities_compliance_previous_years, by = c("location_id", "year"))
 
   measurements_5_cities_summary_all <- bind_rows(
