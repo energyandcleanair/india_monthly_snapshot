@@ -1,6 +1,11 @@
 max_cities_india <- 289
 max_cities_ncap <- 131
 
+ncap_grouping_labels <- c(
+  "ncap_cities" = "NCAP Cities",
+  "non_ncap_cities" = "Non-NCAP Cities"
+)
+
 south_india_states <- c(
   "IND.16_1" = "Karnataka",
   "IND.17_1" = "Kerala",
