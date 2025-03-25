@@ -134,10 +134,9 @@ analysis <- function(
     rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
-    scale_fill_manual(values = c(
-      "#27a59c", "#c4d66c", "#FFE599",
-      "#f6b26b", "#cc0000", "#990000"
-    )) +
+    scale_fill_manual(
+      values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#cc0000", "#990000")
+    ) +
     theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
 
   day_freq_naaqs_nonncap_plot <- ggplot(
@@ -165,10 +164,9 @@ analysis <- function(
     rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
-    scale_fill_manual(values = c(
-      "#27a59c", "#c4d66c", "#FFE599",
-      "#f6b26b", "#cc0000", "#990000"
-    )) +
+    scale_fill_manual(
+      values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#cc0000", "#990000")
+    ) +
     theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
 
   day_freq_who_summary <- day_freq_standard %>%
@@ -209,10 +207,9 @@ analysis <- function(
     rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
-    scale_fill_manual(values = c(
-      "#27a59c", "#c4d66c", "#FFE599",
-      "#f6b26b", "#cc0000", "#990000"
-    )) +
+    scale_fill_manual(
+      values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#cc0000", "#990000")
+    ) +
     theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
 
   day_freq_who_nonncap_plot <- ggplot(
@@ -226,7 +223,7 @@ analysis <- function(
       position = position_stack(vjust = 0.5)
     ) +
     labs(
-      fill = "",
+      fill = "% of days above standard",
       title = "Categorisation of non-NCAP cities \nagainst compliance to NAAQS guidelines"
     ) +
     annotate(
@@ -241,11 +238,14 @@ analysis <- function(
     rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
-    scale_fill_manual(values = c(
-      "#27a59c", "#c4d66c", "#FFE599",
-      "#f6b26b", "#cc0000", "#990000"
-    )) +
-    theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
+    scale_fill_manual(
+      values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#cc0000", "#990000"),
+      labels = c("0%", "0-25%", "25-50%", "50-75%", "75-100%", "100%")
+    ) +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 10, face = "bold"),
+      legend.box.just = "center"
+    )
 
   legend <- cowplot::get_legend(day_freq_who_nonncap_plot)
 
@@ -257,19 +257,20 @@ analysis <- function(
   ) +
     geom_col(show.legend = FALSE) +
     xlim(c(0.2, 2.5)) +
-    geom_text(aes(label = total),
+    geom_text(aes(label = glue("{ncap_grouping_labels[name]} \n{total}")),
               position = position_stack(vjust = 0.5)
     ) +
     labs(
       fill = "",
       title = "Total # of cities with >80% of the days \nwith CAAQMS data"
     ) +
-    annotate("text",
-             x = 0.25, y = 0,
-             label = day_freq_naaqs_summary %>%
-               pull(value) %>%
-               sum(),
-             size = 4, fontface = "bold"
+    annotate(
+      "text",
+      x = 0.25, y = 0,
+      label = day_freq_naaqs_summary %>%
+        pull(value) %>%
+        sum(),
+      size = 4, fontface = "bold"
     ) +
     rcrea::theme_crea_new() +
     theme_void() +
@@ -303,13 +304,17 @@ analysis <- function(
   sf::sf_use_s2(TRUE)
 
   p <- ggplot() +
-    layer_spatial(data = india_boundary, fill = "white") +
+    ggspatial::layer_spatial(data = india_boundary, fill = "white") +
     geom_text(
       data = india_boundary_centroids,
-      aes(x = st_coordinates(geometry)[, 1], y = st_coordinates(geometry)[, 2], label = stname),
+      aes(
+        x = sf::st_coordinates(geometry)[, 1],
+        y = sf::st_coordinates(geometry)[, 2],
+        label = stname
+      ),
       size = 2
     ) +
-    layer_spatial(
+    ggspatial::layer_spatial(
       data = measurements_preset_ncap_summary %>%
         filter(!is.na(latitude) & !is.na(longitude)) %>%
         sf::st_as_sf(coords = c("longitude", "latitude"), crs = 4326),
@@ -323,7 +328,7 @@ analysis <- function(
       legend.direction = "horizontal",
       legend.title = element_blank()
     )
-  quicksave(file.path(get_dir("output"), "cities_grap_distribution.png"), plot = p, scale = 1.5)
+  quicksave(file.path(get_dir("output"), "cities_grap_distribution.png"), plot = p, scale = 1)
 
   measurements_preset_ncap_province <- measurements_preset_ncap_summary %>%
     group_by(gadm1_name, grap_cat) %>%
@@ -378,11 +383,11 @@ analysis <- function(
 
   p <- ggplot(
     measurements_top10_polluted_cities,
-    aes(x = factor(city_name, levels = city_name), y = mean, fill = mean)
+    aes(x = factor(city_name, levels = city_name), y = mean, fill = factor(mean))
   ) +
-    geom_col() +
-    scale_fill_viridis_c() +
-    theme_crea() +
+    geom_bar(stat = 'identity') +
+    rcrea::scale_fill_crea_d() +
+    rcrea::theme_crea_new() +
     labs(
       title = glue(
         "Top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
@@ -391,11 +396,15 @@ analysis <- function(
       x = "City",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    geom_hline(yintercept = 60, linetype = "dashed", color = "black") +
-    geom_hline(yintercept = 15, linetype = "dashed", color = "black") +
-    geom_text(aes(x = 11, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
-    geom_text(aes(x = 11, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1)
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1),
+      legend.position = "none"
+    ) +
+    geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
+    geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
+    geom_text(aes(x = 11.25, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
+    geom_text(aes(x = 11.25, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
+    ggrepel::geom_text_repel(aes(label = round(mean, 0)), vjust = 1, size = 3.5)
   quicksave(file.path(get_dir("output"), "top10_polluted_cities.png"), plot = p, scale = 1)
 
 
@@ -410,14 +419,13 @@ analysis <- function(
     row.names = FALSE
   )
 
-
   p <- ggplot(
     measurements_top10_cleanest_cities,
-    aes(x = factor(city_name, levels = city_name), y = mean, fill = mean)
+    aes(x = factor(city_name, levels = city_name), y = mean, fill = factor(mean))
   ) +
     geom_col() +
-    scale_fill_viridis_c() +
-    theme_crea() +
+    rcrea::scale_fill_crea_d() +
+    rcrea::theme_crea_new() +
     labs(
       title = glue(
         "Top 10 most cleanest cities in India by PM2.5 concentration - {month_year}",
@@ -426,11 +434,15 @@ analysis <- function(
       x = "City",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    geom_hline(yintercept = 60, linetype = "dashed", color = "black") +
-    geom_hline(yintercept = 15, linetype = "dashed", color = "black") +
-    geom_text(aes(x = 11, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
-    geom_text(aes(x = 11, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1)
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1),
+      legend.position = "none"
+    ) +
+    geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
+    geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
+    geom_text(aes(x = 11.25, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
+    geom_text(aes(x = 11.25, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
+    ggrepel::geom_text_repel(aes(label = round(mean, 0)), vjust = 1, size = 3.5)
   quicksave(file.path(get_dir("output"), "top10_cleanest_cities.png"), plot = p, scale = 1)
 
 
@@ -519,11 +531,13 @@ analysis <- function(
     ),
     aes(
       x = factor(city_name, levels = measurements_top10_polluted_cities %>% pull(city_name)),
-      y = mean, , fill = factor(year, levels = c(year(focus_month), year(focus_month) - 1))
+      y = mean,
+      fill = factor(year, levels = c(year(focus_month), year(focus_month) - 1))
     )
   ) +
     geom_bar(position = "dodge", stat = "identity") +
-    theme_crea() +
+    rcrea::scale_fill_crea_d() +
+    rcrea::theme_crea_new() +
     labs(
       title = glue(
         "Top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
@@ -533,15 +547,17 @@ analysis <- function(
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    geom_hline(yintercept = 60, linetype = "dashed", color = "black") +
-    geom_hline(yintercept = 15, linetype = "dashed", color = "black") +
-    geom_text(aes(x = 11, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
-    geom_text(aes(x = 11, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
-    theme(
-      legend.position = "bottom",
-      legend.direction = "horizontal",
-      legend.title = element_blank()
-    )
+    geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
+    geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
+    geom_text(aes(x = 11.25, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
+    geom_text(aes(x = 11.25, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
+    ggrepel::geom_text_repel(
+      aes(label = round(mean, 0)),
+      position = position_dodge(width = 0.9),
+      vjust = 1,
+      size = 3.5
+    ) +
+    theme(legend.title = element_blank())
   quicksave(file.path(get_dir("output"), "top10_polluted_cities_prev.png"), plot = p, scale = 1)
 
 
@@ -557,8 +573,8 @@ analysis <- function(
     aes(x = factor(city_name, levels = city_name), y = count, fill = count)
   ) +
     geom_col() +
-    scale_fill_viridis_c() +
-    theme_crea() +
+    rcrea::scale_fill_crea_c() +
+    rcrea::theme_crea_new() +
     labs(
       title = glue(
         "Top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
@@ -567,7 +583,10 @@ analysis <- function(
       x = "City",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1),
+      legend.position = "none"
+    ) +
     geom_text(aes(label = count), vjust = -0.5, size = 3)
   quicksave(file.path(get_dir("output"), "top10_polluted_cities_freq.png"), plot = p, scale = 1)
 
@@ -583,14 +602,13 @@ analysis <- function(
       distinct(gadm1_name) %>%
       pull()
   )
-
   expected_number_of_states <- 26
 
-  if (actual_number_of_states != expected_number_of_states) {
+  if (actual_number_of_states < expected_number_of_states) {
     warnings$add_warning("wrong_state_number", paste(
       "Number of states in India in analysis was",
       actual_number_of_states,
-      "not",
+      "less than",
       expected_number_of_states
     ))
   }
@@ -604,8 +622,8 @@ analysis <- function(
     )
   ) +
     geom_col() +
-    scale_fill_viridis_c() +
-    theme_crea() +
+    rcrea::scale_fill_crea_c() +
+    rcrea::theme_crea_new() +
     labs(
       title = glue(
         "Most polluted city in each state in India by PM2.5 concentration - {month_year}",
@@ -614,17 +632,20 @@ analysis <- function(
       x = "State",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    geom_hline(yintercept = 60, linetype = "dashed", color = "black") +
-    geom_hline(yintercept = 15, linetype = "dashed", color = "black") +
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1),
+      legend.position = "none"
+    ) +
+    geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
+    geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_text(
-      aes(x = nrow(measurements_top_city_province) + 1, y = 60, label = "NAAQS"),
+      aes(x = nrow(measurements_top_city_province) + 2.25, y = 60, label = "NAAQS"),
       color = "black",
       vjust = -0.5,
       hjust = 1.1
     ) +
     geom_text(
-      aes(x = nrow(measurements_top_city_province) + 1, y = 15, label = "WHO"),
+      aes(x = nrow(measurements_top_city_province) + 2.25, y = 15, label = "WHO"),
       color = "black",
       vjust = -0.5,
       hjust = 1.1
@@ -648,8 +669,8 @@ analysis <- function(
     )
   ) +
     geom_col() +
-    scale_fill_viridis_c() +
-    theme_crea() +
+    rcrea::scale_fill_crea_c() +
+    rcrea::theme_crea_new() +
     labs(
       title = glue(
         "PM2.5 concentrations across state/provincial capital cities in India - {month_year}",
@@ -658,16 +679,23 @@ analysis <- function(
       x = "City",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    geom_hline(yintercept = 60, linetype = "dashed", color = "black") +
-    geom_hline(yintercept = 15, linetype = "dashed", color = "black") +
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1),
+      legend.position = "none"
+    ) +
+    geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
+    geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_text(
-      aes(x = nrow(measurements_capitals_summary) + 1, y = 60, label = "NAAQS"),
-      color = "black", vjust = -0.5, hjust = 1.1
+      aes(x = nrow(measurements_capitals_summary) + 2, y = 60, label = "NAAQS"),
+      color = "black",
+      vjust = -0.5,
+      hjust = 1.1
     ) +
     geom_text(
-      aes(x = nrow(measurements_capitals_summary) + 1, y = 15, label = "WHO"),
-      color = "black", vjust = -0.5, hjust = 1.1
+      aes(x = nrow(measurements_capitals_summary) + 2, y = 15, label = "WHO"),
+      color = "black",
+      vjust = -0.5,
+      hjust = 1.1
     ) +
     geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
   quicksave(file.path(get_dir("output"), "state_capitals.png"), plot = p, scale = 1)
@@ -704,42 +732,52 @@ analysis <- function(
     )
   ) +
     geom_col() +
-    scale_fill_viridis_c() +
-    theme_crea() +
+    rcrea::scale_fill_crea_c() +
+    rcrea::theme_crea_new() +
     labs(
       title = glue(
         "PM2.5 concentrations across million plus cities in",
-        " Indo-Gangetic Plain in India (with CAAQMS) - {month_year}",
+        " Indo-Gangetic Plain in India \n(with CAAQMS) - {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
       x = "City",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    geom_hline(yintercept = 60, linetype = "dashed", color = "black") +
-    geom_hline(yintercept = 15, linetype = "dashed", color = "black") +
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1),
+      legend.position = "none") +
+    geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
+    geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_text(
-      aes(x = nrow(measurements_preset_igp_summary) + 1, y = 60, label = "NAAQS"),
-      color = "black", vjust = -0.5, hjust = 1.1
+      aes(x = nrow(measurements_preset_igp_summary) + 2, y = 60, label = "NAAQS"),
+      color = "black",
+      vjust = -0.5,
+      hjust = 1.1
     ) +
     geom_text(
-      aes(x = nrow(measurements_preset_igp_summary) + 1, y = 15, label = "WHO"),
-      color = "black", vjust = -0.5, hjust = 1.1
+      aes(x = nrow(measurements_preset_igp_summary) + 2, y = 15, label = "WHO"),
+      color = "black",
+      vjust = -0.5,
+      hjust = 1.1
     ) +
     geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
   quicksave(file.path(get_dir("output"), "igp_cities_million.png"), plot = p, scale = 1)
 
   p <- ggplot() +
-    layer_spatial(
+    ggspatial::layer_spatial(
       data = india_boundary %>% filter(tolower(stname) %in% tolower(igp_states)),
       fill = "white"
     ) +
     geom_text(
       data = india_boundary_centroids %>% filter(tolower(stname) %in% tolower(igp_states)),
-      aes(x = st_coordinates(geometry)[, 1], y = st_coordinates(geometry)[, 2], label = stname),
+      aes(
+        x = sf::st_coordinates(geometry)[, 1],
+        y = sf::st_coordinates(geometry)[, 2],
+        label = stname
+      ),
       size = 2
     ) +
-    layer_spatial(
+    ggspatial::layer_spatial(
       data = measurements_preset_igp_summary %>%
         filter(!is.na(latitude) & !is.na(longitude)) %>%
         sf::st_as_sf(coords = c("longitude", "latitude"), crs = 4326),
@@ -753,7 +791,7 @@ analysis <- function(
       legend.direction = "horizontal",
       legend.title = element_blank()
     )
-  quicksave(file.path(get_dir("output"), "igp_cities_grap_distribution.png"), plot = p, scale = 1.5)
+  quicksave(file.path(get_dir("output"), "igp_cities_grap_distribution.png"), plot = p, scale = 1)
 
   measurements_5_cities_summary <- measurements_preset_ncap_summary %>%
     filter(location_id %in% names(top5_populous_cities)) %>%
@@ -895,7 +933,6 @@ plot_pm25 <- function(
   print(plot)
   dev.off()
 }
-
 
 
 get_compliance_frequency_breaks <- function(days_in_month) {
