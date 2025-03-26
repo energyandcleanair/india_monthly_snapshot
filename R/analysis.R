@@ -563,7 +563,8 @@ analysis <- function(
     rcrea::theme_crea_new() +
     labs(
       title = glue(
-        "Year-on-year comparison of top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
+        "Year-on-year comparison of top 10 most polluted cities in India by PM2.5 concentration ",
+        "- {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
       x = "City",
@@ -581,7 +582,11 @@ analysis <- function(
       size = 3.5
     ) +
     theme(legend.title = element_blank())
-  quicksave(file.path(get_dir("output"), "top10_polluted_cities_year-on-year.png"), plot = p, scale = 1)
+  quicksave(
+    file.path(get_dir("output"), "top10_polluted_cities_year-on-year.png"),
+    plot = p,
+    scale = 1
+  )
 
 
   measurements_preset_ncap_top10_count <- measurements_preset_ncap %>%
