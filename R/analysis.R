@@ -132,7 +132,8 @@ analysis <- function(
     xlim(c(0.2, 2.5)) +
     geom_text(
       aes(label = ifelse(value == 0, NA, value)),
-      position = position_stack(vjust = 0.5)
+      position = position_stack(vjust = 0.5),
+      fontface = "bold"
     ) +
     labs(
       title = "Categorisation of NCAP cities \nagainst compliance to NAAQS guidelines"
@@ -144,13 +145,14 @@ analysis <- function(
         filter(name == "ncap_cities") %>%
         pull(value) %>%
         sum(),
-      size = 4, fontface = "bold"
+      size = 4,
+      fontface = "bold"
     ) +
     rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
     scale_fill_manual(
-      values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#cc0000", "#990000")
+      values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#e15936", "#cc0000")
     ) +
     theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
 
@@ -162,7 +164,8 @@ analysis <- function(
     xlim(c(0.2, 2.5)) +
     geom_text(
       aes(label = ifelse(value == 0, NA, value)),
-      position = position_stack(vjust = 0.5)
+      position = position_stack(vjust = 0.5),
+      fontface = "bold"
     ) +
     labs(
       title = "Categorisation of non-NCAP cities \nagainst compliance to NAAQS guidelines"
@@ -174,13 +177,14 @@ analysis <- function(
         filter(name == "non_ncap_cities") %>%
         pull(value) %>%
         sum(),
-      size = 4, fontface = "bold"
+      size = 4,
+      fontface = "bold"
     ) +
     rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
     scale_fill_manual(
-      values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#cc0000", "#990000")
+      values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#e15936", "#cc0000")
     ) +
     theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
 
@@ -193,7 +197,8 @@ analysis <- function(
     xlim(c(0.2, 2.5)) +
     geom_text(
       aes(label = ifelse(value == 0, NA, value)),
-      position = position_stack(vjust = 0.5)
+      position = position_stack(vjust = 0.5),
+      fontface = "bold"
     ) +
     labs(
       title = "Categorisation of NCAP cities \nagainst compliance to WHO guidelines"
@@ -205,13 +210,14 @@ analysis <- function(
         filter(name == "ncap_cities") %>%
         pull(value) %>%
         sum(),
-      size = 4, fontface = "bold"
+      size = 4,
+      fontface = "bold"
     ) +
     rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
     scale_fill_manual(
-      values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#cc0000", "#990000")
+      values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#e15936", "#cc0000")
     ) +
     theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
 
@@ -223,7 +229,8 @@ analysis <- function(
     xlim(c(0.2, 2.5)) +
     geom_text(
       aes(label = ifelse(value == 0, NA, value)),
-      position = position_stack(vjust = 0.5)
+      position = position_stack(vjust = 0.5),
+      fontface = "bold"
     ) +
     labs(
       fill = "% of days above standard",
@@ -236,13 +243,14 @@ analysis <- function(
         filter(name == "non_ncap_cities") %>%
         pull(value) %>%
         sum(),
-      size = 4, fontface = "bold"
+      size = 4,
+      fontface = "bold"
     ) +
     rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
     scale_fill_manual(
-      values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#cc0000", "#990000"),
+      values = c("#27a59c", "#c4d66c", "#FFE599", "#f6b26b", "#e15936", "#cc0000"),
       labels = c("0%", "0-25%", "25-50%", "50-75%", "75-100%", "100%")
     ) +
     theme(
@@ -263,7 +271,8 @@ analysis <- function(
     xlim(c(0.2, 2.5)) +
     geom_text(
       aes(label = glue("{ncap_grouping_labels[name]} \n{total}")),
-      position = position_stack(vjust = 0.5)
+      position = position_stack(vjust = 0.5),
+      fontface = "bold"
     ) +
     labs(
       fill = "",
@@ -275,12 +284,13 @@ analysis <- function(
       label = day_freq_naaqs_summary %>%
         pull(value) %>%
         sum(),
-      size = 4, fontface = "bold"
+      size = 4,
+      fontface = "bold"
     ) +
     rcrea::theme_crea_new() +
     theme_void() +
     coord_polar("y", start = 0) +
-    rcrea::scale_fill_crea_d() +
+    scale_fill_manual(values = c("#cacaca", "#8cc9D0")) +
     theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
 
   final_plot <- plot_grid(
