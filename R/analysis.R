@@ -422,7 +422,7 @@ analysis <- function(
     left_join(measurements_grap, by = "location_id") %>%
     left_join(monthly_cities_compliance, by = "location_id")
   write.csv(
-    measurements_top10_polluted_cities,
+    measurements_top10_cleanest_cities,
     file.path(get_dir("output"), "top10_cleanest_cities.csv"),
     row.names = FALSE
   )
@@ -536,7 +536,7 @@ analysis <- function(
   )
 
 
-  # Top 10 polluted cities previous year plot ----
+  # Top 10 polluted cities year-on-year plot ----
   p <- ggplot(
     bind_rows(
       measurements_top10_polluted_cities %>% mutate(year = focus_year),
@@ -553,7 +553,7 @@ analysis <- function(
     rcrea::theme_crea_new() +
     labs(
       title = glue(
-        "Top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
+        "Year-on-year comparison of top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
       x = "City",
@@ -571,7 +571,7 @@ analysis <- function(
       size = 3.5
     ) +
     theme(legend.title = element_blank())
-  quicksave(file.path(get_dir("output"), "top10_polluted_cities_prev.png"), plot = p, scale = 1)
+  quicksave(file.path(get_dir("output"), "top10_polluted_cities_year-on-year.png"), plot = p, scale = 1)
 
 
   measurements_preset_ncap_top10_count <- measurements_preset_ncap %>%
@@ -592,7 +592,7 @@ analysis <- function(
     rcrea::theme_crea_new() +
     labs(
       title = glue(
-        "Top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
+        "Frequency of Indian cities in top 10 PM2.5 pollution rankings - {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
       x = "City",
