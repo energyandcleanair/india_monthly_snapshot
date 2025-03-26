@@ -108,7 +108,22 @@ analysis <- function(
     ) %>%
     replace_na(list(value = 0))
 
+  day_freq_who_summary <- day_freq_standard %>%
+    group_by(name, pass_who_cut) %>%
+    summarise(value = n()) %>%
+    ungroup() %>%
+    right_join(
+      expand.grid(
+        name = unique(day_freq_standard$name),
+        pass_who_cut = levels(day_freq_standard$pass_who_cut)
+      ),
+      by = c("name", "pass_who_cut")
+    ) %>%
+    replace_na(list(value = 0))
 
+
+  # NAAQS & WHO compliance plot ----
+  ## NAAQS ----
   day_freq_naaqs_ncap_plot <- ggplot(
     day_freq_naaqs_summary %>% filter(name == "ncap_cities"),
     aes(x = 2, y = value, fill = pass_naaqs_cut)
@@ -169,19 +184,7 @@ analysis <- function(
     ) +
     theme(plot.title = element_text(hjust = 0.5, size = 10, face = "bold"))
 
-  day_freq_who_summary <- day_freq_standard %>%
-    group_by(name, pass_who_cut) %>%
-    summarise(value = n()) %>%
-    ungroup() %>%
-    right_join(
-      expand.grid(
-        name = unique(day_freq_standard$name),
-        pass_who_cut = levels(day_freq_standard$pass_who_cut)
-      ),
-      by = c("name", "pass_who_cut")
-    ) %>%
-    replace_na(list(value = 0))
-
+  ## WHO ----
   day_freq_who_ncap_plot <- ggplot(
     day_freq_who_summary %>% filter(name == "ncap_cities"),
     aes(x = 2, y = value, fill = pass_who_cut)
@@ -251,6 +254,7 @@ analysis <- function(
 
   day_freq_who_nonncap_plot <- day_freq_who_nonncap_plot + theme(legend.position = "none")
 
+  ## Cities ----
   cities_plot <- ggplot(
     monthly_compliance,
     aes(x = 2, y = total, fill = name)
@@ -304,6 +308,8 @@ analysis <- function(
   india_boundary_centroids <- sf::st_centroid(india_boundary)
   sf::sf_use_s2(TRUE)
 
+
+  # Cities GRAP distribution plot ----
   p <- ggplot() +
     ggspatial::layer_spatial(data = india_boundary, fill = "white") +
     geom_text(
@@ -382,6 +388,7 @@ analysis <- function(
   )
 
 
+  # Top 10 polluted cities plot ----
   p <- ggplot(
     measurements_top10_polluted_cities,
     aes(x = factor(city_name, levels = city_name), y = mean, fill = factor(mean))
@@ -420,6 +427,8 @@ analysis <- function(
     row.names = FALSE
   )
 
+
+  # Top 10 cleanest cities plot ----
   p <- ggplot(
     measurements_top10_cleanest_cities,
     aes(x = factor(city_name, levels = city_name), y = mean, fill = factor(mean))
@@ -526,6 +535,8 @@ analysis <- function(
     row.names = FALSE
   )
 
+
+  # Top 10 polluted cities previous year plot ----
   p <- ggplot(
     bind_rows(
       measurements_top10_polluted_cities %>% mutate(year = focus_year),
@@ -570,6 +581,8 @@ analysis <- function(
     summarise(count = n()) %>%
     arrange(desc(count))
 
+
+  # Top 10 polluted cities frequency plot ----
   p <- ggplot(
     measurements_preset_ncap_top10_count,
     aes(x = factor(city_name, levels = city_name), y = count, fill = count)
@@ -615,6 +628,8 @@ analysis <- function(
     ))
   }
 
+
+  # Top city by province plot ----
   p <- ggplot(
     measurements_top_city_province,
     aes(
@@ -663,6 +678,8 @@ analysis <- function(
     ungroup() %>%
     arrange(desc(mean))
 
+
+  # State/provincial capital cities plot ----
   p <- ggplot(
     measurements_capitals_summary, aes(
       x = factor(city_name, levels = measurements_capitals_summary %>% pull(city_name)),
@@ -725,6 +742,8 @@ analysis <- function(
       labels = names(grap_scales_pm25)
     ))
 
+
+  # IGP cities plot ----
   p <- ggplot(
     measurements_preset_igp_summary,
     aes(
@@ -766,6 +785,8 @@ analysis <- function(
     geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
   quicksave(file.path(get_dir("output"), "igp_cities_million.png"), plot = p, scale = 1)
 
+
+  # IGP cities GRAP distribution plot ----
   p <- ggplot() +
     ggspatial::layer_spatial(
       data = india_boundary %>% filter(tolower(stname) %in% tolower(igp_states)),
@@ -826,6 +847,8 @@ analysis <- function(
     bind_rows(city_measurements_previous_years) %>%
     filter(location_id %in% names(top5_populous_cities))
 
+
+  # Top 5 populous cities calendar plot ----
   sapply(top5_populous_cities, function(city) {
     n_years <- length(unique(lubridate::year(measurements_5_cities_all$date)))
     n_rows <- 2
