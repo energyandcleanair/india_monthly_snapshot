@@ -388,15 +388,15 @@ analysis <- function(
 
   measurements_top10_polluted_cities <- measurements_preset_ncap_summary %>%
     slice_max(n = 10, order_by = mean) %>%
-    select(location_id, city_name, gadm1_name, mean) %>%
+    select(location_id, city_name, gadm1_name, mean, name) %>%
     left_join(measurements_grap, by = "location_id") %>%
     left_join(monthly_cities_compliance, by = "location_id") %>%
     select(
-      location_id, city_name, `State/UT` = gadm1_name, monitored_days, mean, `% days > NAAQS`,
+      location_id, city_name, `State/UT` = gadm1_name, name, monitored_days, mean, `% days > NAAQS`,
       any_of(c("Good", "Satisfactory", "Moderate", "Poor", "Very Poor", "Severe"))
     )
   write.csv(
-    measurements_top10_polluted_cities,
+    measurements_top10_polluted_cities %>% select(-name),
     file.path(get_dir("output"), "top10_polluted_cities.csv"),
     row.names = FALSE
   )
@@ -405,7 +405,12 @@ analysis <- function(
   # Top 10 polluted cities plot ----
   p <- ggplot(
     measurements_top10_polluted_cities %>%
-      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
+      mutate(
+        city_name = case_when(
+          name == "ncap_cities" ~ paste0(city_name, ",\n", `State/UT`, "*"),
+          TRUE ~ paste0(city_name, ",\n", `State/UT`)
+        )
+      ),
     aes(x = factor(city_name, levels = city_name), y = mean, fill = factor(mean))
   ) +
     geom_col() +
@@ -416,7 +421,8 @@ analysis <- function(
         "Top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
-      x = "City",
+      subtitle = "* indicates NCAP cities",
+      x = "",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
     theme(
@@ -433,11 +439,15 @@ analysis <- function(
 
   measurements_top10_cleanest_cities <- measurements_preset_ncap_summary %>%
     slice_min(n = 10, order_by = mean) %>%
-    select(location_id, city_name, gadm1_name, mean) %>%
+    select(location_id, city_name, gadm1_name, mean, name) %>%
     left_join(measurements_grap, by = "location_id") %>%
-    left_join(monthly_cities_compliance, by = "location_id")
+    left_join(monthly_cities_compliance, by = "location_id") %>%
+    select(
+      location_id, city_name, `State/UT` = gadm1_name, name, monitored_days, mean, `% days > NAAQS`,
+      any_of(c("Good", "Satisfactory", "Moderate", "Poor", "Very Poor", "Severe"))
+    )
   write.csv(
-    measurements_top10_cleanest_cities,
+    measurements_top10_cleanest_cities %>% select(-name),
     file.path(get_dir("output"), "top10_cleanest_cities.csv"),
     row.names = FALSE
   )
@@ -446,7 +456,12 @@ analysis <- function(
   # Top 10 cleanest cities plot ----
   p <- ggplot(
     measurements_top10_cleanest_cities %>%
-      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
+      mutate(
+        city_name = case_when(
+          name == "ncap_cities" ~ paste0(city_name, ",\n", `State/UT`, "*"),
+          TRUE ~ paste0(city_name, ",\n", `State/UT`)
+        )
+      ),
     aes(x = factor(city_name, levels = city_name), y = mean, fill = factor(mean))
   ) +
     geom_col() +
@@ -457,7 +472,8 @@ analysis <- function(
         "Top 10 most cleanest cities in India by PM2.5 concentration - {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
-      x = "City",
+      subtitle = "* indicates NCAP cities",
+      x = "",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
     theme(
@@ -477,6 +493,11 @@ analysis <- function(
     pull()
 
   measurements_previous_years <- measurements_previous_years %>%
+    left_join(
+      location_presets %>% filter(name == "ncap_cities"),
+      by = "location_id",
+      relationship = "many-to-one"
+    ) %>%
     mutate(
       pass_who = value <= who_pm25_standard,
       pass_naaqs = value <= naaqs_pm25_standard,
@@ -489,7 +510,7 @@ analysis <- function(
     )
 
   measurements_previous_years_summary <- measurements_previous_years %>%
-    group_by(location_id, city_name, pollutant, pollutant_name, gadm1_name, month, year) %>%
+    group_by(location_id, city_name, pollutant, pollutant_name, gadm1_name, name, month, year) %>%
     summarise(mean = mean(value, na.rm = TRUE)) %>%
     ungroup() %>%
     mutate(
@@ -536,7 +557,7 @@ analysis <- function(
 
   measurements_10_polluted_cities_previous <- measurements_previous_years_summary %>%
     filter(year == focus_year - 1, location_id %in% cities_prev) %>%
-    select(location_id, city_name, month, year, mean) %>%
+    select(location_id, city_name, month, year, mean, gadm1_name, name) %>%
     left_join(
       measurements_previous_years_grap %>% filter(year == focus_year - 1),
       by = c("location_id", "month", "year")
@@ -546,11 +567,12 @@ analysis <- function(
       by = c("location_id", "year")
     ) %>%
     select(
-      location_id, city_name, `State/UT` = gadm1_name, year, monitored_days, mean, `% days > NAAQS`,
+      location_id, city_name, `State/UT` = gadm1_name, name,
+      year, monitored_days, mean, `% days > NAAQS`,
       any_of(c("Good", "Satisfactory", "Moderate", "Poor", "Very Poor", "Severe"))
     )
   write.csv(
-    measurements_10_polluted_cities_previous,
+    measurements_10_polluted_cities_previous %>% select(-name),
     file.path(get_dir("output"), "top10_polluted_cities_prev.csv"),
     row.names = FALSE
   )
@@ -562,7 +584,12 @@ analysis <- function(
       measurements_top10_polluted_cities %>% mutate(year = focus_year),
       measurements_10_polluted_cities_previous
     ) %>%
-      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
+      mutate(
+        city_name = case_when(
+          name == "ncap_cities" ~ paste0(city_name, ",\n", `State/UT`, "*"),
+          TRUE ~ paste0(city_name, ",\n", `State/UT`)
+        )
+      ),
     aes(
       x = factor(city_name, levels = measurements_top10_polluted_cities %>% pull(city_name)),
       y = mean,
@@ -578,10 +605,11 @@ analysis <- function(
         "- {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
-      x = "City",
+      subtitle = "* indicates NCAP cities",
+      x = "",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_text(aes(x = 11.25, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
@@ -610,8 +638,7 @@ analysis <- function(
 
   # Top 10 polluted cities frequency plot ----
   p <- ggplot(
-    measurements_preset_ncap_top10_count %>%
-      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
+    measurements_preset_ncap_top10_count,
     aes(x = factor(city_name, levels = city_name), y = count, fill = count)
   ) +
     geom_col() +
@@ -622,11 +649,11 @@ analysis <- function(
         "Frequency of Indian cities in top 10 PM2.5 pollution rankings - {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
-      x = "City",
+      x = "",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
     theme(
-      axis.text.x = element_text(angle = 90, hjust = 1),
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
       legend.position = "none"
     ) +
     geom_text(aes(label = count), vjust = -0.5, size = 3)
@@ -634,9 +661,10 @@ analysis <- function(
 
 
   measurements_top_city_province <- measurements_preset_ncap_summary %>%
-    group_by(gadm1_name) %>%
+    group_by(`State/UT` = gadm1_name) %>%
     slice_max(n = 1, order_by = mean) %>%
-    arrange(desc(mean))
+    arrange(desc(mean)) %>%
+    ungroup()
 
   # TODO maybe change to warning??
   actual_number_of_states <- length(
@@ -659,9 +687,14 @@ analysis <- function(
   # Top city by province plot ----
   p <- ggplot(
     measurements_top_city_province %>%
-      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
+      mutate(
+        city_name = case_when(
+          name == "ncap_cities" ~ paste0(city_name, ",\n", `State/UT`, "*"),
+          TRUE ~ paste0(city_name, ", ", `State/UT`)
+        )
+      ),
     aes(
-      x = factor(gadm1_name, levels = measurements_top_city_province %>% pull(gadm1_name)),
+      x = factor(city_name, levels = city_name),
       y = mean,
       fill = mean
     )
@@ -674,11 +707,12 @@ analysis <- function(
         "Most polluted city in each state in India by PM2.5 concentration - {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
-      x = "State",
+      subtitle = "* indicates NCAP cities",
+      x = "",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
     theme(
-      axis.text.x = element_text(angle = 90, hjust = 1),
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
       legend.position = "none"
     ) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
@@ -700,8 +734,13 @@ analysis <- function(
 
 
   measurements_capitals_summary <- measurements %>%
+    left_join(
+      location_presets %>% filter(name == "ncap_cities"),
+      by = "location_id",
+      relationship = "many-to-one"
+    ) %>%
     filter(tolower(city_name) %in% tolower(states_capitals)) %>%
-    group_by(location_id, city_name, pollutant, pollutant_name, gadm1_name) %>%
+    group_by(location_id, city_name, pollutant, pollutant_name, `State/UT` = gadm1_name, name) %>%
     summarise(mean = mean(value, na.rm = TRUE)) %>%
     ungroup() %>%
     arrange(desc(mean))
@@ -710,9 +749,14 @@ analysis <- function(
   # State/provincial capital cities plot ----
   p <- ggplot(
     measurements_capitals_summary %>%
-      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
+      mutate(
+        city_name = case_when(
+          name == "ncap_cities" ~ paste0(city_name, ",\n", `State/UT`, "*"),
+          TRUE ~ paste0(city_name, ",\n", `State/UT`)
+        )
+      ),
     aes(
-      x = factor(city_name, levels = measurements_capitals_summary %>% pull(city_name)),
+      x = factor(city_name, levels = city_name),
       y = mean,
       fill = mean
     )
@@ -725,11 +769,12 @@ analysis <- function(
         "PM2.5 concentrations across state/provincial capital cities in India - {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
-      x = "City",
+      subtitle = "* indicates NCAP cities",
+      x = "",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
     theme(
-      axis.text.x = element_text(angle = 90, hjust = 1),
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
       legend.position = "none"
     ) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
@@ -758,7 +803,7 @@ analysis <- function(
     ) %>%
     mutate(name = replace_na(name, "non_igp_cities")) %>%
     filter(name == "igp_cities", city_name %in% igp_cities_million) %>%
-    group_by(location_id, city_name, pollutant, pollutant_name, name, gadm1_name) %>%
+    group_by(location_id, city_name, pollutant, pollutant_name, name, `State/UT` = gadm1_name) %>%
     summarise(mean = mean(value, na.rm = TRUE)) %>%
     ungroup() %>%
     arrange(desc(mean)) %>%
@@ -776,9 +821,14 @@ analysis <- function(
   # IGP cities plot ----
   p <- ggplot(
     measurements_preset_igp_summary %>%
-      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
+      mutate(
+        city_name = case_when(
+          name == "ncap_cities" ~ paste0(city_name, ",\n", `State/UT`, "*"),
+          TRUE ~ paste0(city_name, ",\n", `State/UT`)
+        )
+      ),
     aes(
-      x = factor(city_name, levels = measurements_preset_igp_summary %>% pull(city_name)),
+      x = factor(city_name, levels = city_name),
       y = mean,
       fill = mean
     )
@@ -792,11 +842,11 @@ analysis <- function(
         " Indo-Gangetic Plain in India \n(with CAAQMS) - {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
-      x = "City",
+      x = "",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
     theme(
-      axis.text.x = element_text(angle = 90, hjust = 1),
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
       legend.position = "none"
     ) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
