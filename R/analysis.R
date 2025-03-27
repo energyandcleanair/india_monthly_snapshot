@@ -499,6 +499,7 @@ analysis <- function(
       relationship = "many-to-one"
     ) %>%
     mutate(
+      name = replace_na(name, "non_ncap_cities"),
       pass_who = value <= who_pm25_standard,
       pass_naaqs = value <= naaqs_pm25_standard,
       pass_naaqs2 = value <= 2 * naaqs_pm25_standard,
@@ -591,7 +592,7 @@ analysis <- function(
         )
       ),
     aes(
-      x = factor(city_name, levels = measurements_top10_polluted_cities %>% pull(city_name)),
+      x = factor(city_name, levels = unique(city_name)),
       y = mean,
       fill = factor(year, levels = c(year(focus_month), year(focus_month) - 1))
     )
@@ -601,7 +602,7 @@ analysis <- function(
     rcrea::theme_crea_new() +
     labs(
       title = glue(
-        "Year-on-year comparison of top 10 most polluted cities in India by PM2.5 concentration ",
+        "Year-on-year change of top 10 most polluted cities in India by PM2.5 concentration ",
         "- {month_year}",
         month_year = format(focus_month, "%B %Y")
       ),
@@ -614,10 +615,10 @@ analysis <- function(
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_text(aes(x = 11.25, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
     geom_text(aes(x = 11.25, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
-    ggrepel::geom_text_repel(
+    geom_text(
       aes(label = round(mean, 0)),
       position = position_dodge(width = 0.9),
-      vjust = 1,
+      vjust = -0.3,
       size = 3.5
     ) +
     theme(legend.title = element_blank())
