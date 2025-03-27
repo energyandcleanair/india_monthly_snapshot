@@ -390,7 +390,11 @@ analysis <- function(
     slice_max(n = 10, order_by = mean) %>%
     select(location_id, city_name, gadm1_name, mean) %>%
     left_join(measurements_grap, by = "location_id") %>%
-    left_join(monthly_cities_compliance, by = "location_id")
+    left_join(monthly_cities_compliance, by = "location_id") %>%
+    select(
+      location_id, city_name, `State/UT` = gadm1_name, monitored_days, mean, `% days > NAAQS`,
+      any_of(c("Good", "Satisfactory", "Moderate", "Poor", "Very Poor", "Severe"))
+    )
   write.csv(
     measurements_top10_polluted_cities,
     file.path(get_dir("output"), "top10_polluted_cities.csv"),
@@ -400,7 +404,8 @@ analysis <- function(
 
   # Top 10 polluted cities plot ----
   p <- ggplot(
-    measurements_top10_polluted_cities,
+    measurements_top10_polluted_cities %>%
+      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
     aes(x = factor(city_name, levels = city_name), y = mean, fill = factor(mean))
   ) +
     geom_col() +
@@ -415,20 +420,20 @@ analysis <- function(
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
     theme(
-      axis.text.x = element_text(angle = 90, hjust = 1),
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
       legend.position = "none"
     ) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_text(aes(x = 11.25, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
     geom_text(aes(x = 11.25, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
-    ggrepel::geom_text_repel(aes(label = round(mean, 0)), vjust = 1, size = 3.5)
+    geom_text(aes(label = round(mean, 0)), vjust = -0.3, size = 3.5)
   quicksave(file.path(get_dir("output"), "top10_polluted_cities.png"), plot = p, scale = 1)
 
 
   measurements_top10_cleanest_cities <- measurements_preset_ncap_summary %>%
     slice_min(n = 10, order_by = mean) %>%
-    select(location_id, city_name, mean) %>%
+    select(location_id, city_name, gadm1_name, mean) %>%
     left_join(measurements_grap, by = "location_id") %>%
     left_join(monthly_cities_compliance, by = "location_id")
   write.csv(
@@ -440,7 +445,8 @@ analysis <- function(
 
   # Top 10 cleanest cities plot ----
   p <- ggplot(
-    measurements_top10_cleanest_cities,
+    measurements_top10_cleanest_cities %>%
+      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
     aes(x = factor(city_name, levels = city_name), y = mean, fill = factor(mean))
   ) +
     geom_col() +
@@ -455,14 +461,14 @@ analysis <- function(
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
     theme(
-      axis.text.x = element_text(angle = 90, hjust = 1),
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
       legend.position = "none"
     ) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_text(aes(x = 11.25, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
     geom_text(aes(x = 11.25, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
-    ggrepel::geom_text_repel(aes(label = round(mean, 0)), vjust = 1, size = 3.5)
+    geom_text(aes(label = round(mean, 0)), vjust = -0.3, size = 3.5)
   quicksave(file.path(get_dir("output"), "top10_cleanest_cities.png"), plot = p, scale = 1)
 
 
@@ -538,6 +544,10 @@ analysis <- function(
     left_join(
       monthly_cities_compliance_previous_years %>% filter(year == focus_year - 1),
       by = c("location_id", "year")
+    ) %>%
+    select(
+      location_id, city_name, `State/UT` = gadm1_name, year, monitored_days, mean, `% days > NAAQS`,
+      any_of(c("Good", "Satisfactory", "Moderate", "Poor", "Very Poor", "Severe"))
     )
   write.csv(
     measurements_10_polluted_cities_previous,
@@ -551,7 +561,8 @@ analysis <- function(
     bind_rows(
       measurements_top10_polluted_cities %>% mutate(year = focus_year),
       measurements_10_polluted_cities_previous
-    ),
+    ) %>%
+      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
     aes(
       x = factor(city_name, levels = measurements_top10_polluted_cities %>% pull(city_name)),
       y = mean,
@@ -599,7 +610,8 @@ analysis <- function(
 
   # Top 10 polluted cities frequency plot ----
   p <- ggplot(
-    measurements_preset_ncap_top10_count,
+    measurements_preset_ncap_top10_count %>%
+      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
     aes(x = factor(city_name, levels = city_name), y = count, fill = count)
   ) +
     geom_col() +
@@ -646,7 +658,8 @@ analysis <- function(
 
   # Top city by province plot ----
   p <- ggplot(
-    measurements_top_city_province,
+    measurements_top_city_province %>%
+      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
     aes(
       x = factor(gadm1_name, levels = measurements_top_city_province %>% pull(gadm1_name)),
       y = mean,
@@ -696,7 +709,9 @@ analysis <- function(
 
   # State/provincial capital cities plot ----
   p <- ggplot(
-    measurements_capitals_summary, aes(
+    measurements_capitals_summary %>%
+      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
+    aes(
       x = factor(city_name, levels = measurements_capitals_summary %>% pull(city_name)),
       y = mean,
       fill = mean
@@ -760,7 +775,8 @@ analysis <- function(
 
   # IGP cities plot ----
   p <- ggplot(
-    measurements_preset_igp_summary,
+    measurements_preset_igp_summary %>%
+      mutate(city_name = paste0(city_name, ",\n", `State/UT`)),
     aes(
       x = factor(city_name, levels = measurements_preset_igp_summary %>% pull(city_name)),
       y = mean,
