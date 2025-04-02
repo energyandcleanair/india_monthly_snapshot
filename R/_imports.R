@@ -26,6 +26,7 @@
 #'    slice_min
 #'    summarise
 #'    ungroup
+#'    sym
 #' @importFrom ggspatial
 #'    layer_spatial
 #' @importFrom glue
