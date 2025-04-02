@@ -42,7 +42,8 @@ Imports:
     units,
     ggspatial,
     validate,
-    openair
+    openair,
+    ggtext
 Remotes:
     energyandcleanair/creahelpers,
     energyandcleanair/rcrea,

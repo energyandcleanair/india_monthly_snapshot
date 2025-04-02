@@ -624,7 +624,8 @@ analysis <- function(
   measurements_top_city_province <- measurements_preset_ncap_summary %>%
     group_by(gadm1_name) %>%
     slice_max(n = 1, order_by = mean) %>%
-    arrange(desc(mean))
+    arrange(desc(mean)) %>%
+    mutate(label = glue("{city_name}<br/>**{gadm1_name}**"))
 
   # TODO maybe change to warning??
   actual_number_of_states <- length(
@@ -648,7 +649,7 @@ analysis <- function(
   p <- ggplot(
     measurements_top_city_province,
     aes(
-      x = factor(gadm1_name, levels = measurements_top_city_province %>% pull(gadm1_name)),
+      x = factor(label, levels = measurements_top_city_province %>% pull(label)),
       y = mean,
       fill = mean
     )
@@ -665,7 +666,13 @@ analysis <- function(
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
     theme(
-      axis.text.x = element_text(angle = 90, hjust = 1),
+      axis.text.x = ggtext::element_markdown(
+        angle = 90,
+        hjust = 1,
+        vjust = 0.5,
+        lineheight = 0.8,
+        size = 10
+      ),
       legend.position = "none"
     ) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
