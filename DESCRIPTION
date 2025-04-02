@@ -43,7 +43,8 @@ Imports:
     ggspatial,
     validate,
     openair,
-    ggtext
+    ggtext,
+    zip
 Remotes:
     energyandcleanair/creahelpers,
     energyandcleanair/rcrea,
