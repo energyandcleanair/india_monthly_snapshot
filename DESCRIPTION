@@ -1,7 +1,7 @@
 Package: indiasnapshots
 Type: Package
 Title: India monthly snapshots
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: c(
     person("Centre for Research on Energy and Clean Air (CREA)", role = c("aut", "cph")),
     person("Danny", "Hartono", email = "danny@energyandcleanair.org", role = c("aut", "cre")),
