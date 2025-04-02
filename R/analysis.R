@@ -345,7 +345,11 @@ analysis <- function(
       legend.direction = "horizontal",
       legend.title = element_blank()
     )
-  rcrea::quicksave(file.path(get_dir("output"), "cities_grap_distribution.png"), plot = p, scale = 1)
+  rcrea::quicksave(
+    file.path(get_dir("output"), "cities_grap_distribution.png"),
+    plot = p,
+    scale = 1
+  )
 
   measurements_preset_ncap_province <- measurements_preset_ncap_summary %>%
     group_by(gadm1_name, grap_cat) %>%
@@ -555,7 +559,10 @@ analysis <- function(
     aes(
       x = factor(city_name, levels = measurements_top10_polluted_cities %>% pull(city_name)),
       y = mean,
-      fill = factor(year, levels = c(lubridate::year(focus_month), lubridate::year(focus_month) - 1))
+      fill = factor(year, levels = c(
+        lubridate::year(focus_month),
+        lubridate::year(focus_month) - 1
+      ))
     )
   ) +
     geom_bar(position = "dodge", stat = "identity") +
@@ -618,7 +625,11 @@ analysis <- function(
       legend.position = "none"
     ) +
     geom_text(aes(label = count), vjust = -0.5, size = 3)
-  rcrea::quicksave(file.path(get_dir("output"), "top10_polluted_cities_freq.png"), plot = p, scale = 1)
+  rcrea::quicksave(
+    file.path(get_dir("output"), "top10_polluted_cities_freq.png"),
+    plot = p,
+    scale = 1
+  )
 
 
   measurements_top_city_province <- measurements_preset_ncap_summary %>%
@@ -805,7 +816,11 @@ analysis <- function(
       hjust = 1.1
     ) +
     geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
-  rcrea::quicksave(file.path(get_dir("output"), "igp_cities_million.png"), plot = p, scale = 1)
+  rcrea::quicksave(
+    file.path(get_dir("output"), "igp_cities_million.png"),
+    plot = p,
+    scale = 1
+  )
 
 
   # IGP cities GRAP distribution plot ----
@@ -837,7 +852,11 @@ analysis <- function(
       legend.direction = "horizontal",
       legend.title = element_blank()
     )
-  rcrea::quicksave(file.path(get_dir("output"), "igp_cities_grap_distribution.png"), plot = p, scale = 1)
+  rcrea::quicksave(
+    file.path(get_dir("output"), "igp_cities_grap_distribution.png"),
+    plot = p,
+    scale = 1
+  )
 
   measurements_5_cities_summary <- measurements_preset_ncap_summary %>%
     filter(location_id %in% names(top5_populous_cities)) %>%
