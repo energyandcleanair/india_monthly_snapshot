@@ -205,8 +205,8 @@ build_snapshot <- function(
   if (file.exists(zip_file)) {
     file.remove(zip_file)
   }
-  zip::zip(
-    zipfile = zip_file,
+  zip::zipr(
+    zip_file,
     files = get_dir("month"),
     recurse = TRUE
   )
