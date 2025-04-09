@@ -702,7 +702,7 @@ analysis <- function(
       mutate(
         city_name = case_when(
           name == "ncap_cities" ~ paste0(city_name, ",\n", `State/UT`, "*"),
-          TRUE ~ paste0(city_name, ", ", `State/UT`)
+          TRUE ~ paste0(city_name, ",\n", `State/UT`)
         )
       ),
     aes(
