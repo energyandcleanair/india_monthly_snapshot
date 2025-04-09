@@ -26,6 +26,7 @@
 #'    slice_min
 #'    summarise
 #'    ungroup
+#'    sym
 #' @importFrom ggspatial
 #'    layer_spatial
 #' @importFrom glue
@@ -44,6 +45,26 @@
 #' @importFrom tidyr
 #'    replace_na
 #'    pivot_wider
-#' @importFrom lubridate
-#'    is.Date
+#' @importFrom ggplot2
+#'    ggplot
+#'    aes
+#'    geom_col
+#'    geom_text
+#'    geom_bar
+#'    scale_fill_manual
+#'    scale_color_manual
+#'    labs
+#'    theme_void
+#'    theme_minimal
+#'    theme
+#'    xlim
+#'    coord_polar
+#'    element_text
+#'    annotate
+#'    position_stack
+#'    position_dodge
+#'    geom_hline
+#'    ggsave
+#'    element_blank
+#'    discrete_scale
 NULL

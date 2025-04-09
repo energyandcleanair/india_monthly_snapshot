@@ -146,7 +146,7 @@ measurement_columns <- c(
 )
 
 measurement_rules <- validate::validator(
-  all(is.Date(date)),
+  all(inherits(date, "Date")),
   all(variable == "observed"),
   is.numeric(value),
   all(source == "cpcb"),

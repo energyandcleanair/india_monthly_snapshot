@@ -298,7 +298,7 @@ analysis <- function(
     day_freq_who_nonncap_plot, legend, day_freq_who_ncap_plot,
     ncol = 3
   )
-  quicksave(file.path(get_dir("output"), "compliance.png"), plot = final_plot)
+  rcrea::quicksave(file.path(get_dir("output"), "compliance.png"), plot = final_plot)
 
 
   cities <- fetch_cities_for_india() %>% select(id, longitude, latitude)
@@ -345,7 +345,11 @@ analysis <- function(
       legend.direction = "horizontal",
       legend.title = element_blank()
     )
-  quicksave(file.path(get_dir("output"), "cities_grap_distribution.png"), plot = p, scale = 1)
+  rcrea::quicksave(
+    file.path(get_dir("output"), "cities_grap_distribution.png"),
+    plot = p,
+    scale = 1
+  )
 
   measurements_preset_ncap_province <- measurements_preset_ncap_summary %>%
     group_by(gadm1_name, grap_cat) %>%
@@ -433,8 +437,8 @@ analysis <- function(
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_text(aes(x = 11.25, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
     geom_text(aes(x = 11.25, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
-    geom_text(aes(label = round(mean, 0)), vjust = -0.3, size = 3.5)
-  quicksave(file.path(get_dir("output"), "top10_polluted_cities.png"), plot = p, scale = 1)
+    ggrepel::geom_text_repel(aes(label = round(mean, 0)), vjust = 1, size = 3.5)
+  rcrea::quicksave(file.path(get_dir("output"), "top10_polluted_cities.png"), plot = p, scale = 1)
 
 
   measurements_top10_cleanest_cities <- measurements_preset_ncap_summary %>%
@@ -484,8 +488,8 @@ analysis <- function(
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_text(aes(x = 11.25, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
     geom_text(aes(x = 11.25, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
-    geom_text(aes(label = round(mean, 0)), vjust = -0.3, size = 3.5)
-  quicksave(file.path(get_dir("output"), "top10_cleanest_cities.png"), plot = p, scale = 1)
+    ggrepel::geom_text_repel(aes(label = round(mean, 0)), vjust = 1, size = 3.5)
+  rcrea::quicksave(file.path(get_dir("output"), "top10_cleanest_cities.png"), plot = p, scale = 1)
 
 
   cities_prev <- measurements_top10_polluted_cities %>%
@@ -594,7 +598,10 @@ analysis <- function(
     aes(
       x = factor(city_name, levels = unique(city_name)),
       y = mean,
-      fill = factor(year, levels = c(year(focus_month), year(focus_month) - 1))
+      fill = factor(year, levels = c(
+        lubridate::year(focus_month),
+        lubridate::year(focus_month) - 1
+      ))
     )
   ) +
     geom_bar(position = "dodge", stat = "identity") +
@@ -622,7 +629,7 @@ analysis <- function(
       size = 3.5
     ) +
     theme(legend.title = element_blank())
-  quicksave(
+  rcrea::quicksave(
     file.path(get_dir("output"), "top10_polluted_cities_year-on-year.png"),
     plot = p,
     scale = 1
@@ -658,7 +665,11 @@ analysis <- function(
       legend.position = "none"
     ) +
     geom_text(aes(label = count), vjust = -0.5, size = 3)
-  quicksave(file.path(get_dir("output"), "top10_polluted_cities_freq.png"), plot = p, scale = 1)
+  rcrea::quicksave(
+    file.path(get_dir("output"), "top10_polluted_cities_freq.png"),
+    plot = p,
+    scale = 1
+  )
 
 
   measurements_top_city_province <- measurements_preset_ncap_summary %>%
@@ -731,7 +742,7 @@ analysis <- function(
       hjust = 1.1
     ) +
     geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
-  quicksave(file.path(get_dir("output"), "top_city_province.png"), plot = p, scale = 1)
+  rcrea::quicksave(file.path(get_dir("output"), "top_city_province.png"), plot = p, scale = 1)
 
 
   measurements_capitals_summary <- measurements %>%
@@ -793,7 +804,7 @@ analysis <- function(
       hjust = 1.1
     ) +
     geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
-  quicksave(file.path(get_dir("output"), "state_capitals.png"), plot = p, scale = 1)
+  rcrea::quicksave(file.path(get_dir("output"), "state_capitals.png"), plot = p, scale = 1)
 
 
   measurements_preset_igp_summary <- measurements %>%
@@ -865,7 +876,11 @@ analysis <- function(
       hjust = 1.1
     ) +
     geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
-  quicksave(file.path(get_dir("output"), "igp_cities_million.png"), plot = p, scale = 1)
+  rcrea::quicksave(
+    file.path(get_dir("output"), "igp_cities_million.png"),
+    plot = p,
+    scale = 1
+  )
 
 
   # IGP cities GRAP distribution plot ----
@@ -897,7 +912,11 @@ analysis <- function(
       legend.direction = "horizontal",
       legend.title = element_blank()
     )
-  quicksave(file.path(get_dir("output"), "igp_cities_grap_distribution.png"), plot = p, scale = 1)
+  rcrea::quicksave(
+    file.path(get_dir("output"), "igp_cities_grap_distribution.png"),
+    plot = p,
+    scale = 1
+  )
 
   measurements_5_cities_summary <- measurements_preset_ncap_summary %>%
     filter(location_id %in% names(top5_populous_cities)) %>%

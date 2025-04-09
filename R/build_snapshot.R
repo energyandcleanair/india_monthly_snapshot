@@ -198,4 +198,18 @@ build_snapshot <- function(
     file.path(get_dir("output"), "warnings.csv"),
     row.names = FALSE
   )
+
+  log_info("Create a zip of the output directory")
+  # Create a zip file of the output directory
+  zip_file <- file.path(get_dir("month"), "results.zip")
+  if (file.exists(zip_file)) {
+    file.remove(zip_file)
+  }
+  zip::zipr(
+    zip_file,
+    files = get_dir("month"),
+    recurse = TRUE
+  )
+  log_info("Zip file created at {zip_file}")
+
 }
