@@ -18,6 +18,22 @@ day_threshold_percent <- 0.8
 low_value_threshold <- 5
 moderate_value_threshold <- 10
 
+overshoot_columns <- c(
+  "date",
+  "location_id",
+  "unit",
+  "source",
+  "pollutant",
+  "country_id",
+  "target_id",
+  "target_value",
+  "value_overshoot",
+  "averaging_period",
+  "value_avg_so_far",
+  "is_overshoot",
+  "is_overshoot_estimated"
+)
+
 grap_scales_pm25 <- c(
   "Good" = 30,
   "Satisfactory" = 60,
