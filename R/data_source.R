@@ -127,6 +127,26 @@ fetch_cities_for_india <- function() {
   )
 }
 
+fetch_overshooting_for_india <- function(start_date, cities) {
+  data <- lapply(cities, function(city) {
+    url <- glue(
+      "https://api.energyandcleanair.org/violations",
+      "?city={city}",
+      "&date_from={start_date}",
+      "&pollutant=pm25"
+    ) %>% URLencode()
+
+    jsonlite::fromJSON(url)[["data"]]
+  }) %>%
+    bind_rows() %>%
+    tibble::as_tibble() %>%
+    readr::type_convert() %>%
+    filter(is_overshoot, !is_overshoot_estimated) %>%
+    select(overshoot_columns)
+
+  return(data)
+}
+
 measurement_columns <- c(
   "date",
   "process_id",
