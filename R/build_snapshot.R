@@ -52,6 +52,9 @@ build_snapshot <- function(
 
   # Get the data
   log_info("Fetching data")
+  log_debug("Fetching cities")
+  cities <- fetch_cities_for_india() %>% select(id, longitude, latitude)
+
   log_debug("Fetching measurements data")
   city_measurements_raw <- fetch_city_measurements_for_india(
     start_date = focus_month_start,
@@ -81,6 +84,18 @@ build_snapshot <- function(
       name,
       location_id
     )
+
+  log_debug("Fetching overshooting dates")
+  overshooting_data <- fetch_overshooting_for_india(
+    start_date = paste0(focus_year, "-01-01"),
+    cities = cities$id
+  )
+
+  write.csv(
+    overshooting_data,
+    file.path(get_dir("output"), "overshooting.csv"),
+    row.names = FALSE
+  )
 
   station_statuses <- local({
     clean_stations <- function(stations) {
@@ -182,6 +197,7 @@ build_snapshot <- function(
   )
 
   analysis(
+    cities = cities,
     city_measurements = city_measurements,
     city_measurements_previous_years = city_measurements_previous_years,
     station_measurements = station_measurements,

@@ -1,5 +1,6 @@
 analysis <- function(
     ...,
+    cities,
     city_measurements,
     city_measurements_previous_years,
     station_measurements,
@@ -310,9 +311,6 @@ analysis <- function(
     ncol = 3
   )
   rcrea::quicksave(file.path(get_dir("output"), "compliance.png"), plot = final_plot)
-
-
-  cities <- fetch_cities_for_india() %>% select(id, longitude, latitude)
 
   measurements_preset_ncap_summary <- measurements_preset_ncap_summary %>%
     left_join(cities %>% select(id, latitude, longitude), by = c("location_id" = "id"))
