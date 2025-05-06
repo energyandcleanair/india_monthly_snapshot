@@ -34,6 +34,12 @@ overshoot_columns <- c(
   "is_overshoot_estimated"
 )
 
+overshoot_standard <-  c(
+  "ae5dc5c0-863c-11ef-b57b-e6cf434e9f43" = "WHO PM2.5 (2021, yearly)",
+  "ae5dcdfe-863c-11ef-b57b-e6cf434e9f43" = "WHO PM2.5 (2005, yearly)",
+  "ae5e689a-863c-11ef-b57b-e6cf434e9f43" = "India PM2.5 (yearly)"
+)
+
 grap_scales_pm25 <- c(
   "Good" = 30,
   "Satisfactory" = 60,
