@@ -667,7 +667,7 @@ analysis <- function(
         month_year = format(focus_month, "%B %Y")
       ),
       x = "",
-      y = "Mean PM2.5 concentration (µg/m³)"
+      y = "Frequency"
     ) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
