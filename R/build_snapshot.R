@@ -117,6 +117,11 @@ build_snapshot <- function(
     row.names = FALSE
   )
 
+  # Check the data
+  log_info("Checking data")
+  days_in_analysis <- as.integer(focus_period_end - focus_period_start + 1)
+  day_threshold <- day_threshold_percent * days_in_analysis
+
   station_statuses <- local({
     clean_stations <- function(stations) {
       stations %>%
@@ -130,7 +135,7 @@ build_snapshot <- function(
 
     log_debug("Fetching previous stations data")
     stations_previous <- fetch_previous_stations_for_india(
-      year_month = format(previous_month_start, "%Y-%m")
+      year_month = format(station_comparison_month, "%Y-%m")
     ) %>%
       clean_stations()
 
@@ -139,7 +144,7 @@ build_snapshot <- function(
       old_stations = stations_previous,
       new_stations = stations,
       history = station_measurements,
-      month = focus_month
+      days_in_analysis = days_in_analysis
     )
 
     if (nrow(stations) != nrow(station_status)) {
@@ -156,18 +161,13 @@ build_snapshot <- function(
   # You can add warnings to the warnings tibble to be written to the CSV at the end
   warnings <- Warnings$new()
 
-  # Check the data
-  log_info("Checking data")
-  days_in_month <- focus_month_end - focus_month_start + 1
-  day_threshold <- day_threshold_percent * days_in_month
 
   check_data(
     warnings = warnings,
     city_measurements = city_measurements_raw,
     station_measurements = station_measurements,
     location_presets = location_presets,
-    day_threshold = day_threshold,
-    focus_month = focus_month
+    day_threshold = day_threshold
   )
 
   valid_cities <- city_measurements_raw %>%
@@ -216,14 +216,29 @@ build_snapshot <- function(
     row.names = FALSE
   )
 
+  chart_date_subtitle <- if (focus_period_mode == "half_year") {
+    paste0(
+      format(focus_period_start, "%B"),
+      " to ",
+      format(focus_period_end, "%B %Y")
+    )
+  } else {
+    paste0(
+      format(focus_period_start, "%B %Y")
+    )
+  }
+
   analysis(
     cities = cities,
     city_measurements = city_measurements,
     city_measurements_previous_years = city_measurements_previous_years,
     station_measurements = station_measurements,
     location_presets = location_presets,
-    focus_month = focus_month,
-    days_in_month = days_in_month,
+    chart_date_subtitle = chart_date_subtitle,
+    focus_year = focus_year,
+    focus_period_mode = focus_period_mode,
+    focus_period_start = focus_period_start,
+    days_in_analysis = days_in_analysis,
     warnings = warnings
   )
 
