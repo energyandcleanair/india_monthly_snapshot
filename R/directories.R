@@ -3,9 +3,9 @@ pkg_env_dirs <- new.env()
 init_dirs <- function(
     ...,
     output_dir,
-    month_subdir) {
+    subdir) {
   pkg_env_dirs$base <- output_dir
-  pkg_env_dirs$month <- file.path(pkg_env_dirs$base, month_subdir)
+  pkg_env_dirs$month <- file.path(pkg_env_dirs$base, subdir)
   pkg_env_dirs$cache <- file.path(pkg_env_dirs$month, "cache")
   pkg_env_dirs$output <- file.path(pkg_env_dirs$month, "output")
   pkg_env_dirs$diag <- file.path(pkg_env_dirs$month, "diagnostics")
