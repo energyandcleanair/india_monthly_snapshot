@@ -5,8 +5,7 @@ check_data <- function(
     city_measurements,
     station_measurements,
     location_presets,
-    day_threshold,
-    focus_month) {
+    day_threshold) {
   log_debug("Checking number of cities doesn't exceed the limit")
   check_data_city_limits(
     city_measurements = city_measurements,
@@ -18,7 +17,6 @@ check_data <- function(
   check_data_winter_pm25(
     warnings = warnings,
     city_measurements = city_measurements,
-    focus_month = focus_month
   )
 
   log_debug("Checking if southern cities are in the top 10")
