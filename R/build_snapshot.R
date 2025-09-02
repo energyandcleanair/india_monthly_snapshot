@@ -2,23 +2,18 @@ log_threshold(DEBUG)
 
 #' @export
 build_snapshot <- function(
-    focus_month = NULL,
+    focus_period = NULL,
     output_dir = "data") {
   log_info("Initialising arguments")
-  focus_month <- local({
-    if (!is.null(focus_month)) {
-      log_info("Using focus_month from argument")
-      if (!grepl("^\\d{4}-\\d{2}-\\d{2}$", focus_month)) {
-        stop("focus_month must be in YYYY-MM-DD format")
+  focus_period <- local({
+    if (!is.null(focus_period)) {
+      log_info("Using focus_period from argument")
+      if (!grepl("^\\d{4}-\\d{2}$", focus_period) & (!grepl("^\\d{4}-H(1|2)$", focus_period))) {
+        stop("focus_period must be in YYYY-MM or YYYY-Hn format")
       }
-      return(
-        lubridate::floor_date(
-          lubridate::ymd(focus_month),
-          "month"
-        )
-      )
+      return(focus_period)
     } else {
-      log_info("Using focus_month from today")
+      log_info("Using focus_period from today")
       today <- lubridate::today()
       start_of_this_month <- lubridate::floor_date(today, "month")
       start_of_last_month <- lubridate::floor_date(
@@ -26,27 +21,52 @@ build_snapshot <- function(
         "month"
       )
 
-      return(start_of_last_month)
+      return(start_of_last_month %>% format("%Y-%m"))
     }
   })
-  log_info("Focus month is {focus_month}")
+
+  focus_period_mode <- if(focus_period %>% grepl("^\\d{4}-H(1|2)$")) {
+    "half_year"
+  } else {
+    "month"
+  }
+
+  log_info("Focus period is {focus_period}")
 
   init_dirs(
     output_dir = output_dir,
-    month_subdir = format(focus_month, "%Y-%m")
+    subdir = focus_period
   )
 
-  focus_month_start <- lubridate::floor_date(focus_month, "month")
-  focus_month_end <- lubridate::ceiling_date(focus_month, "month") - lubridate::day(1)
-  focus_year <- lubridate::year(focus_month)
+  if(focus_period_mode == "half_year") {
+    focus_half_year <- focus_period %>%
+      gsub("^\\d{4}-H(1|2)$", "\\1", .) %>%
+      as.integer()
 
-  previous_month_start <- lubridate::floor_date(focus_month_start - lubridate::day(1), "month")
+    focus_year <- focus_period %>%
+      gsub("^(\\d{4})-H(1|2)$", "\\1", .) %>%
+      as.integer()
+
+    focus_period_start <- ymd(paste0(focus_year, "-", (focus_half_year - 1) * 6 + 1, "-01"))
+    focus_period_end <- ymd(paste0(
+      focus_year, "-", (focus_half_year) * 6,
+      if(focus_half_year == 1) "-30" else "-31")
+    )
+  } else {
+    focus_period_start <- ymd(paste0(focus_period, "-01"))
+    focus_period_end <- lubridate::ceiling_date(focus_period_start, "month") - lubridate::days(1)
+  }
+
+  focus_year <- lubridate::year(focus_period_start)
+
+  # only for stations comparison
+  station_comparison_month <- lubridate::floor_date(focus_period_start - lubridate::day(1), "month")
   log_debug(
     paste(
-      "Arguments initialised: focus_month = {focus_month},",
-      "focus_month_start = {focus_month_start},",
-      "focus_month_end = {focus_month_end},",
-      "previous_month_start = {previous_month_start}"
+      "Arguments initialised: ",
+      "focus_period_start = {focus_period_start},",
+      "focus_period_end = {focus_period_end},",
+      "station_comparison_month = {station_comparison_month}"
     )
   )
 
@@ -57,14 +77,14 @@ build_snapshot <- function(
 
   log_debug("Fetching measurements data")
   city_measurements_raw <- fetch_city_measurements_for_india(
-    start_date = focus_month_start,
-    end_date = focus_month_end
+    start_date = focus_period_start,
+    end_date = focus_period_end
   )
 
   log_debug("Fetching station measurements data")
   station_measurements <- fetch_station_measurements_for_india(
-    start_date = focus_month_start,
-    end_date = focus_month_end
+    start_date = focus_period_start,
+    end_date = focus_period_end
   ) %>%
     select(
       date,
@@ -162,9 +182,9 @@ build_snapshot <- function(
   city_measurements_previous_years <- lapply((focus_year - 8):(focus_year - 1), function(year) {
     log_info(paste("Fetching data for year", year))
     city_measurements_previous_year_raw <- fetch_city_measurements_for_india(
-      start_date = focus_month_start %>%
+      start_date = focus_period_start %>%
         lubridate::`year<-`(year),
-      end_date = focus_month_end %>%
+      end_date = focus_period_end %>%
         lubridate::`year<-`(year) %>%
         lubridate::`day<-`(lubridate::days_in_month(.))
     )
