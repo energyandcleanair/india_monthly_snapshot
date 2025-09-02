@@ -20,7 +20,7 @@ fetch_city_measurements_for_india <- function(
     all(process_id == "city_day_mad")
   )
   return(
-    fetch_data(measurements_url, cache_file, use_cache) %>%
+    fetch_data_csv(measurements_url, cache_file, use_cache) %>%
       validate(
         columns = measurement_columns,
         rules = measurement_rules + city_measurement_rules
@@ -46,7 +46,7 @@ fetch_station_measurements_for_india <- function(start_date, end_date, ..., use_
   )
 
   return(
-    fetch_data(measurements_url, cache_file, use_cache) %>%
+    fetch_data_csv(measurements_url, cache_file, use_cache) %>%
       validate(
         columns = measurement_columns,
         rules = measurement_rules + station_measurement_rules
@@ -63,7 +63,7 @@ fetch_current_stations_for_india <- function(..., use_cache = TRUE) {
   )
   cache_file <- file.path(get_dir("cache"), "stations.csv")
   return(
-    fetch_data(url, cache_file, use_cache) %>%
+    fetch_data_csv(url, cache_file, use_cache) %>%
       validate(
         columns = station_columns,
         rules = station_rules
@@ -78,7 +78,7 @@ fetch_previous_stations_for_india <- function(year_month, ..., use_cache = TRUE)
   )
   cache_file <- file.path(get_dir("cache"), "stations_previous.csv")
   return(
-    fetch_data(url, cache_file, use_cache) %>%
+    fetch_data_csv(url, cache_file, use_cache) %>%
       validate(
         columns = station_columns,
         rules = station_rules
@@ -93,7 +93,7 @@ fetch_location_presets_for_india <- function(year_month, ..., use_cache = TRUE) 
   )
   cache_file <- file.path(get_dir("cache"), "location_presets.csv")
   return(
-    fetch_data(url, cache_file, use_cache) %>%
+    fetch_data_csv(url, cache_file, use_cache) %>%
       validate(
         columns = c("name", "location_id"),
         rules = validate::validator(
@@ -111,7 +111,7 @@ fetch_cities_for_india <- function() {
   )
   cache_file <- file.path(get_dir("cache"), "cities.csv")
   return(
-    fetch_data(url, cache_file) %>%
+    fetch_data_csv(url, cache_file) %>%
       validate(
         columns = c("id", "name", "gadm1_id", "country_id", "level", "longitude", "latitude"),
         rules = validate::validator(
@@ -129,6 +129,8 @@ fetch_cities_for_india <- function() {
 
 fetch_overshooting_for_india <- function(start_date, cities) {
   data <- lapply(cities, function(city) {
+    cache_file <- file.path(get_dir("cache"), glue("overshooting-{city}.json"))
+    # Must use JSON as the endpoint does not support CSV for this route
     url <- glue(
       "https://api.energyandcleanair.org/violations",
       "?city={city}",
@@ -136,7 +138,7 @@ fetch_overshooting_for_india <- function(start_date, cities) {
       "&pollutant=pm25"
     ) %>% URLencode()
 
-    jsonlite::fromJSON(url)[["data"]]
+    fetch_data_json(url, cache_file)[["data"]]
   }) %>%
     bind_rows() %>%
     tibble::as_tibble() %>%
@@ -198,16 +200,16 @@ station_rules <- validate::validator(
   all(level == "station")
 )
 
-cache_data <- function(url, cache_file) {
+cache_data_csv <- function(url, cache_file) {
   if (!file.exists(cache_file)) {
     data <- readr::read_csv(url, show_col_types = FALSE)
     write.csv(data, cache_file, row.names = FALSE)
   }
   return(readr::read_csv(cache_file, show_col_types = FALSE))
 }
-fetch_data <- function(url, cache_file, use_cache = TRUE) {
+fetch_data_csv <- function(url, cache_file, use_cache = TRUE) {
   if (use_cache) {
-    data <- cache_data(url, cache_file)
+    data <- cache_data_csv(url, cache_file)
   } else {
     data <- readr::read_csv(url, show_col_types = FALSE)
   }
@@ -216,6 +218,42 @@ fetch_data <- function(url, cache_file, use_cache = TRUE) {
 
   return(data)
 }
+
+fetch_data_json <- function(url, cache_file) {
+
+  hit <- FALSE
+
+  if (!file.exists(cache_file)) {
+    message(glue("{cache_file}: not in cache, fetching data"))
+
+    h <- curl::new_handle()
+    args_list <- list(h, "Accept" = "application/json")
+    do.call(curl::handle_setheaders, c(args_list))
+
+    # Temporary cache to stop empty file being created on failure
+    cache_tmp <- paste0(cache_file, "-tmp")
+    res <- curl::curl_fetch_disk(url, cache_tmp, handle = h)
+    if (res$status_code != 200) {
+      stop(glue::glue("Unable to download {url}, status code: {res$status_code}"))
+    }
+    file.rename(cache_tmp, cache_file)
+
+    hit <- FALSE
+  } else {
+    message(glue::glue("File ({cache_file}) already in cache, using cached file"))
+    hit <- TRUE
+  }
+
+  data <- jsonlite::read_json(cache_file)
+
+  attr(data, "cache_hit") <- hit
+
+  return(
+    data
+  )
+}
+
+
 validate <- function(data, ..., columns, rules) {
   if (!missing(columns)) {
     missing_columns <- setdiff(columns, colnames(data))
