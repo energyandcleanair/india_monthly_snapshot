@@ -44,7 +44,8 @@ Imports:
     validate,
     openair,
     ggtext,
-    zip
+    zip,
+    curl
 Remotes:
     energyandcleanair/creahelpers,
     energyandcleanair/rcrea,
