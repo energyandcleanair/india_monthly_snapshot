@@ -5,13 +5,15 @@ analysis <- function(
     city_measurements_previous_years,
     station_measurements,
     location_presets,
-    focus_month,
-    days_in_month,
+    chart_date_subtitle,
+    focus_year,
+    focus_period_mode,
+    days_in_analysis,
     warnings) {
-  measurements <- city_measurements
+  measurements <- city_measurements %>%
+    mutate(year = lubridate::year(date), month = lubridate::month(date))
   measurements_previous_years <- city_measurements_previous_years %>%
     mutate(year = lubridate::year(date), month = lubridate::month(date))
-  focus_year <- focus_month %>% lubridate::year()
 
   measurements_preset_ncap <- measurements %>%
     left_join(
@@ -91,12 +93,12 @@ analysis <- function(
     mutate(
       pass_who_cut = cut(
         not_pass_who,
-        breaks = get_compliance_frequency_breaks(days_in_month),
+        breaks = get_compliance_frequency_breaks(days_in_analysis),
         labels = c("0%", "25%", "50%", "75%", "99%", "100%")
       ),
       pass_naaqs_cut = cut(
         not_pass_naaqs,
-        breaks = get_compliance_frequency_breaks(days_in_month),
+        breaks = get_compliance_frequency_breaks(days_in_analysis),
         labels = c("0%", "25%", "50%", "75%", "99%", "100%")
       )
     )
@@ -431,8 +433,7 @@ analysis <- function(
     rcrea::theme_crea_new() +
     labs(
       title = glue(
-        "Top 10 most polluted cities in India by PM2.5 concentration - {month_year}",
-        month_year = format(focus_month, "%B %Y")
+        "Top 10 most polluted cities in India by PM2.5 concentration - {chart_date_subtitle}"
       ),
       subtitle = "* indicates NCAP cities",
       x = "",
@@ -482,8 +483,7 @@ analysis <- function(
     rcrea::theme_crea_new() +
     labs(
       title = glue(
-        "Top 10 most cleanest cities in India by PM2.5 concentration - {month_year}",
-        month_year = format(focus_month, "%B %Y")
+        "Top 10 most cleanest cities in India by PM2.5 concentration - {chart_date_subtitle}",
       ),
       subtitle = "* indicates NCAP cities",
       x = "",
@@ -608,8 +608,8 @@ analysis <- function(
       x = factor(city_name, levels = unique(city_name)),
       y = mean,
       fill = factor(year, levels = c(
-        lubridate::year(focus_month),
-        lubridate::year(focus_month) - 1
+        focus_year,
+        focus_year - 1
       ))
     )
   ) +
@@ -619,8 +619,7 @@ analysis <- function(
     labs(
       title = glue(
         "Year-on-year change of top 10 most polluted cities in India by PM2.5 concentration ",
-        "- {month_year}",
-        month_year = format(focus_month, "%B %Y")
+        "- \n{chart_date_subtitle}",
       ),
       subtitle = "* indicates NCAP cities",
       x = "",
@@ -663,8 +662,7 @@ analysis <- function(
     rcrea::theme_crea_new() +
     labs(
       title = glue(
-        "Frequency of Indian cities in top 10 PM2.5 pollution rankings - {month_year}",
-        month_year = format(focus_month, "%B %Y")
+        "Frequency of Indian cities in top 10 PM2.5 pollution rankings - {chart_date_subtitle}",
       ),
       x = "",
       y = "Frequency"
@@ -725,8 +723,7 @@ analysis <- function(
     rcrea::theme_crea_new() +
     labs(
       title = glue(
-        "Most polluted city in each state in India by PM2.5 concentration - {month_year}",
-        month_year = format(focus_month, "%B %Y")
+        "Most polluted city in each state in India by PM2.5 concentration - {chart_date_subtitle}"
       ),
       subtitle = "* indicates NCAP cities",
       x = "",
@@ -787,8 +784,7 @@ analysis <- function(
     rcrea::theme_crea_new() +
     labs(
       title = glue(
-        "PM2.5 concentrations across state/provincial capital cities in India - {month_year}",
-        month_year = format(focus_month, "%B %Y")
+        "PM2.5 concentrations across state/provincial capital cities in India - {chart_date_subtitle}"
       ),
       subtitle = "* indicates NCAP cities",
       x = "",
@@ -860,8 +856,7 @@ analysis <- function(
     labs(
       title = glue(
         "PM2.5 concentrations across million plus cities in",
-        " Indo-Gangetic Plain in India \n(with CAAQMS) - {month_year}",
-        month_year = format(focus_month, "%B %Y")
+        " Indo-Gangetic Plain in India \n(with CAAQMS) - {chart_date_subtitle}"
       ),
       x = "",
       y = "Mean PM2.5 concentration (µg/m³)"
@@ -958,26 +953,58 @@ analysis <- function(
     filter(location_id %in% names(top5_populous_cities))
 
 
-  # Top 5 populous cities calendar plot ----
-  sapply(top5_populous_cities, function(city) {
-    n_years <- length(unique(lubridate::year(measurements_5_cities_all$date)))
-    n_rows <- 2
-    col_dim <- ceiling(n_years / n_rows)
-    row_dim <- n_rows
-    layout_dims <- c(col_dim, row_dim)
+  # Calendar plots ----
+  if (focus_period_mode == "month") {
+    focus_month <- station_measurements %>%
+      filter(city_id %in% names(top5_populous_cities)) %>%
+      pull(date) %>%
+      min() %>%
+      lubridate::floor_date(unit = "month")
+    sapply(top5_populous_cities, function(city) {
+      n_years <- length(unique(lubridate::year(measurements_5_cities_all$date)))
+      n_rows <- 2
+      col_dim <- ceiling(n_years / n_rows)
+      row_dim <- n_rows
+      layout_dims <- c(col_dim, row_dim)
 
-    plot_data <- measurements_5_cities_all %>%
-      filter(city_name == city)
-    plot_pm25(
-      city_name = city,
-      data = plot_data,
-      value = "value",
-      year_range = min(lubridate::year(plot_data$date)):max(lubridate::year(plot_data$date)),
-      month_range = lubridate::month(focus_month),
-      layout_dims = layout_dims,
-      file_name = file.path(get_dir("output"), paste0("pm25_calendar_", city, ".png"))
-    )
-  })
+
+
+      plot_data <- measurements_5_cities_all %>%
+        filter(city_name == city)
+      plot_pm25(
+        city_name = city,
+        data = plot_data,
+        value = "value",
+        year_range = min(lubridate::year(plot_data$date)):max(lubridate::year(plot_data$date)),
+        month_range = lubridate::month(focus_month),
+        layout_dims = layout_dims,
+        file_name = file.path(get_dir("output"), paste0("pm25_calendar_", city, ".png"))
+      )
+    })
+
+  } else if (focus_period_mode == "half_year") {
+    sapply(measurements_top10_polluted_cities %>% distinct(city_name) %>% pull, function(city) {
+      n_years <- 1
+      n_rows <- 1
+      col_dim <- ceiling(n_years / n_rows)
+      row_dim <- n_rows
+      layout_dims <- c(6, 1)
+
+      plot_data <- measurements %>%
+        filter(city_name == city)
+      plot_pm25(
+        city_name = city,
+        data = plot_data,
+        value = "value",
+        year_range = 2025,
+        month_range = 1:6,
+        layout_dims = layout_dims,
+        file_name = file.path(get_dir("output"), paste0("pm25_calendar_", city, ".png"))
+      )
+    })
+  }
+
+
 
   # add warning for cities with no coordinates
   measurements_preset_ncap_summary %>%
@@ -1071,6 +1098,6 @@ plot_pm25 <- function(
 }
 
 
-get_compliance_frequency_breaks <- function(days_in_month) {
-  return(c(days_in_month * c(-0.01, 0.01, 0.25, 0.5, 0.75, 0.99, 1)))
+get_compliance_frequency_breaks <- function(days_in_analysis) {
+  return(c(days_in_analysis * c(-0.01, 0.01, 0.25, 0.5, 0.75, 0.99, 1)))
 }
