@@ -25,7 +25,7 @@ build_snapshot <- function(
     }
   })
 
-  focus_period_mode <- if(focus_period %>% grepl("^\\d{4}-H(1|2)$")) {
+  focus_period_mode <- if(focus_period %>% grepl("^\\d{4}-H(1|2)$", .)) {
     "half_year"
   } else {
     "month"
