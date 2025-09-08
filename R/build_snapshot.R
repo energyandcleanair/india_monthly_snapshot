@@ -25,7 +25,7 @@ build_snapshot <- function(
     }
   })
 
-  focus_period_mode <- if(focus_period %>% grepl("^\\d{4}-H(1|2)$", .)) {
+  focus_period_mode <- if (focus_period %>% grepl("^\\d{4}-H(1|2)$", .)) {
     "half_year"
   } else {
     "month"
@@ -38,7 +38,7 @@ build_snapshot <- function(
     subdir = focus_period
   )
 
-  if(focus_period_mode == "half_year") {
+  if (focus_period_mode == "half_year") {
     focus_half_year <- focus_period %>%
       gsub("^\\d{4}-H(1|2)$", "\\1", .) %>%
       as.integer()
@@ -48,9 +48,8 @@ build_snapshot <- function(
       as.integer()
 
     focus_period_start <- ymd(paste0(focus_year, "-", (focus_half_year - 1) * 6 + 1, "-01"))
-    focus_period_end <- ymd(paste0(
-      focus_year, "-", (focus_half_year) * 6,
-      if(focus_half_year == 1) "-30" else "-31")
+    focus_period_end <- ymd(
+      paste0(focus_year, "-", (focus_half_year) * 6, if (focus_half_year == 1) "-30" else "-31")
     )
   } else {
     focus_period_start <- ymd(paste0(focus_period, "-01"))
