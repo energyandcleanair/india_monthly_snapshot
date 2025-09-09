@@ -7,6 +7,7 @@ one_week_ago <- today - lubridate::days(7)
 
 month_start <- today
 month_end <- lubridate::ceiling_date(today, "month") - lubridate::days(1)
+days_in_analysis <- as.integer(month_end - month_start + 1)
 
 #' Builds history for the station for the month based on the percentage given.
 #' Fills from the start date to the end date until the the last day before
@@ -206,7 +207,7 @@ describe("get_statuses_of_stations", {
         old_stations = stations_none$stations,
         new_stations = stations_none$stations,
         history = stations_none$history,
-        month = month_start
+        days_in_analysis = days_in_analysis
       )
 
       expect_equal(nrow(diff), 0)
@@ -221,7 +222,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_all_live$stations,
             new_stations = stations_all_live$stations,
             history = stations_all_live$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_all_live$stations %>%
@@ -236,7 +237,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_all_live$stations,
             new_stations = stations_one_delayed$stations,
             history = stations_one_delayed$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_delayed$stations %>%
@@ -251,7 +252,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_all_live$stations,
             new_stations = stations_one_inactive$stations,
             history = stations_one_inactive$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_inactive$stations %>%
@@ -266,7 +267,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_all_live$stations,
             new_stations = stations_one_na_details$stations,
             history = stations_one_na_details$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_na_details$stations %>%
@@ -283,7 +284,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_delayed$stations,
             new_stations = stations_all_live$stations,
             history = stations_all_live$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_all_live$stations %>%
@@ -298,7 +299,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_delayed$stations,
             new_stations = stations_one_inactive$stations,
             history = stations_one_inactive$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_inactive$stations %>%
@@ -313,7 +314,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_delayed$stations,
             new_stations = stations_one_na_details$stations,
             history = stations_one_na_details$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_na_details$stations %>%
@@ -334,7 +335,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_inactive$stations,
             new_stations = stations_all_live$stations,
             history = stations_all_live$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_all_live$stations %>%
@@ -349,7 +350,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_inactive$stations,
             new_stations = stations_one_delayed$stations,
             history = stations_one_delayed$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_delayed$stations %>%
@@ -364,7 +365,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_inactive$stations,
             new_stations = stations_one_inactive$stations,
             history = stations_one_inactive$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_inactive$stations %>%
@@ -382,7 +383,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_inactive$stations,
             new_stations = stations_one_na_details$stations,
             history = stations_one_na_details$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_na_details$stations %>%
@@ -406,7 +407,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_na_details$stations,
             new_stations = stations_all_live$stations,
             history = stations_all_live$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_all_live$stations %>%
@@ -421,7 +422,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_na_details$stations,
             new_stations = stations_one_delayed$stations,
             history = stations_one_delayed$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_delayed$stations %>%
@@ -436,7 +437,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_na_details$stations,
             new_stations = stations_one_inactive$stations,
             history = stations_one_inactive$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_inactive$stations %>%
@@ -454,7 +455,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_na_details$stations,
             new_stations = stations_one_na_details$stations,
             history = stations_one_na_details$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_na_details$stations %>%
@@ -478,7 +479,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_no_record_at_all$stations,
             new_stations = stations_all_live$stations,
             history = stations_all_live$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_all_live$stations %>%
@@ -493,7 +494,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_no_record_at_all$stations,
             new_stations = stations_one_delayed$stations,
             history = stations_one_delayed$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_delayed$stations %>%
@@ -508,7 +509,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_no_record_at_all$stations,
             new_stations = stations_one_inactive$stations,
             history = stations_one_inactive$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_inactive$stations %>%
@@ -526,7 +527,7 @@ describe("get_statuses_of_stations", {
             old_stations = stations_one_no_record_at_all$stations,
             new_stations = stations_one_na_details$stations,
             history = stations_one_na_details$history,
-            month = month_start
+            days_in_analysis = days_in_analysis
           )
 
           expected_stations <- stations_one_na_details$stations %>%
@@ -544,7 +545,7 @@ describe("get_statuses_of_stations", {
         old_stations = stations_all_live$stations,
         new_stations = stations_with_various_percentage_history$stations,
         history = stations_with_various_percentage_history$history,
-        month = month_start
+        days_in_analysis = days_in_analysis
       )
 
       expected_stations <- stations_with_various_percentage_history$stations %>%
