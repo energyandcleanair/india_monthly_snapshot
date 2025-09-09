@@ -67,16 +67,20 @@ check_data_city_limits <- function(..., city_measurements, location_presets, day
   }
 }
 
-check_data_winter_pm25 <- function(..., city_measurements, warnings, focus_month) {
+check_data_winter_pm25 <- function(..., city_measurements, warnings) {
   winter_months <- c(10, 11, 12, 1, 2)
-  month_of_year <- lubridate::month(focus_month)
 
-  if (month_of_year %in% winter_months) {
-    average_pm25 <- city_measurements %>%
-      group_by(city_id) %>%
-      summarise(
-        average_pm25 = mean(value, na.rm = TRUE)
-      )
+  average_pm25 <- city_measurements %>%
+    mutate(
+      month_of_year = lubridate::month(date),
+      is_winter = month_of_year %in% winter_months
+    ) %>%
+    filter(is_winter) %>%
+    group_by(city_id, month_of_year) %>%
+    summarise(average_pm25 = mean(value, na.rm = TRUE))
+
+
+  if (nrow(average_pm25) > 0) {
 
     if (any(average_pm25$average_pm25 > 100)) {
       high_pm25_cities <- average_pm25 %>%
@@ -87,7 +91,8 @@ check_data_winter_pm25 <- function(..., city_measurements, warnings, focus_month
           mutate(
             type = "high_pm25_gt100",
             message = glue(
-              "City {city_id} has an average PM2.5 concentration above 100 µg/m³: {average_pm25}"
+              "City {city_id} in {month_of_year} has an average PM2.5 concentration above ",
+              "100 µg/m³: {average_pm25}"
             )
           )
       )
@@ -102,13 +107,15 @@ check_data_winter_pm25 <- function(..., city_measurements, warnings, focus_month
           mutate(
             type = "high_pm25_gt200",
             message = glue(
-              "City {city_id} has an average PM2.5 concentration above 200 µg/m³: {average_pm25}"
+              "City {city_id} in {month_of_year} has an average PM2.5 concentration above ",
+              "200 µg/m³: {average_pm25}"
             )
           )
       )
     }
   }
 }
+
 
 check_data_top_10_cities <- function(..., city_measurements, warnings) {
   top_10_cities <- city_measurements %>%
