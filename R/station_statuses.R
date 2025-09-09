@@ -1,5 +1,5 @@
 
-get_statuses_of_stations <- function(..., old_stations, new_stations, history, month) {
+get_statuses_of_stations <- function(..., old_stations, new_stations, history, days_in_analysis) {
   active_statuses <- c("live", "delay")
 
   log_debug("Calculating station changes")
@@ -65,7 +65,7 @@ get_statuses_of_stations <- function(..., old_stations, new_stations, history, m
   percentages <- history %>%
     group_by(location_id) %>%
     summarise(
-      percent_complete = n() / as.numeric(lubridate::days_in_month(month))
+      percent_complete = n() / days_in_analysis
     ) %>%
     mutate(
       percent_category = percent_categoriser(percent_complete)
