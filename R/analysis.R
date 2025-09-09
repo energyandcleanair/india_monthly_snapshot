@@ -34,7 +34,7 @@ analysis <- function(
     )
 
   measurements_preset_ncap_summary <- measurements_preset_ncap %>%
-    group_by(location_id, city_name, pollutant, pollutant_name, name, gadm1_name) %>%
+    group_by(location_id, city_name, year, pollutant, pollutant_name, name, gadm1_name) %>%
     summarise(mean = mean(value, na.rm = TRUE)) %>%
     ungroup() %>%
     mutate(
@@ -46,12 +46,8 @@ analysis <- function(
         breaks = c(0, unlist(unname(grap_scales_pm25))),
         labels = names(grap_scales_pm25)
       )
-    )
-
-  write.csv(
-    measurements_preset_ncap_summary %>% arrange(desc(mean)),
-    file.path(get_dir("output"), "all_cities_ordered.csv")
-  )
+    ) %>%
+    left_join(cities %>% select(id, latitude, longitude), by = c("location_id" = "id"))
 
   monthly_compliance <- lapply(
     measurements_preset_ncap_summary %>% distinct(name) %>% pull(),
@@ -128,7 +124,7 @@ analysis <- function(
       by = c("name", "pass_who_cut")
     ) %>%
     replace_na(list(value = 0))
-
+  browser()
 
   # NAAQS & WHO compliance plot ----
   ## NAAQS ----
@@ -246,7 +242,7 @@ analysis <- function(
     ) +
     labs(
       fill = "% of days above standard",
-      title = "Categorisation of non-NCAP cities \nagainst compliance to NAAQS guidelines"
+      title = "Categorisation of non-NCAP cities \nagainst compliance to WHO guidelines"
     ) +
     annotate(
       "text",
@@ -314,9 +310,6 @@ analysis <- function(
   )
   rcrea::quicksave(file.path(get_dir("output"), "compliance.png"), plot = final_plot)
 
-  measurements_preset_ncap_summary <- measurements_preset_ncap_summary %>%
-    left_join(cities %>% select(id, latitude, longitude), by = c("location_id" = "id"))
-
   india_boundary <- sf::st_read(
     system.file(
       "extdata", "shp", "India_State_Boundary_Updated.shp",
@@ -374,7 +367,6 @@ analysis <- function(
     row.names = FALSE
   )
 
-
   measurements_grap <- measurements_preset_ncap %>%
     group_by(location_id, grap_cat) %>%
     summarise(count = n()) %>%
@@ -385,6 +377,16 @@ analysis <- function(
       "Good", "Satisfactory", "Moderate", "Poor", "Very Poor"
     )))))
 
+  write.csv(
+    measurements_preset_ncap_summary %>%
+      arrange(desc(mean)) %>%
+      select(-c(name, pass_who, pass_naaqs)) %>%
+      left_join(measurements_grap, by = "location_id") %>%
+      left_join(daily_compliance, by = "location_id") %>%
+      select(city_name, state_name = gadm1_name, is_ncap = name, mean, Severe, `Very Poor`, Poor,
+             Moderate, Satisfactory, Good, monitored_days, pass_who, pass_naaqs),
+    file.path(get_dir("output"), "all_cities_ordered.csv")
+  )
 
   monthly_cities_compliance <- lapply(
     measurements_preset_ncap %>% distinct(location_id) %>% pull(),
@@ -524,7 +526,7 @@ analysis <- function(
     )
 
   measurements_previous_years_summary <- measurements_previous_years %>%
-    group_by(location_id, city_name, pollutant, pollutant_name, gadm1_name, name, month, year) %>%
+    group_by(location_id, city_name, pollutant, pollutant_name, gadm1_name, name, year) %>%
     summarise(mean = mean(value, na.rm = TRUE)) %>%
     ungroup() %>%
     mutate(
@@ -539,7 +541,7 @@ analysis <- function(
     )
 
   measurements_previous_years_grap <- measurements_previous_years %>%
-    group_by(location_id, grap_cat, month, year) %>%
+    group_by(location_id, grap_cat, year) %>%
     summarise(count = n()) %>%
     ungroup() %>%
     pivot_wider(names_from = grap_cat, values_from = count, values_fill = list(count = 0)) %>%
@@ -571,10 +573,10 @@ analysis <- function(
 
   measurements_10_polluted_cities_previous <- measurements_previous_years_summary %>%
     filter(year == focus_year - 1, location_id %in% cities_prev) %>%
-    select(location_id, city_name, month, year, mean, gadm1_name, name) %>%
+    select(location_id, city_name, year, mean, gadm1_name, name) %>%
     left_join(
       measurements_previous_years_grap %>% filter(year == focus_year - 1),
-      by = c("location_id", "month", "year")
+      by = c("location_id", "year")
     ) %>%
     left_join(
       monthly_cities_compliance_previous_years %>% filter(year == focus_year - 1),
@@ -647,9 +649,17 @@ analysis <- function(
   measurements_preset_ncap_top10_count <- measurements_preset_ncap %>%
     group_by(date, pollutant, pollutant_name) %>%
     slice_max(n = 10, order_by = value) %>%
+    ungroup() %>%
+    mutate(
+      city_name = case_when(
+        city_name == "Aurangabad" ~ paste0(city_name, ", ", gadm1_name),
+        TRUE ~ city_name
+      )
+    ) %>%
     group_by(location_id, city_name) %>%
     summarise(count = n()) %>%
-    arrange(desc(count))
+    arrange(desc(count)) %>%
+    ungroup
 
 
   # Top 10 polluted cities frequency plot ----
@@ -784,7 +794,8 @@ analysis <- function(
     rcrea::theme_crea_new() +
     labs(
       title = glue(
-        "PM2.5 concentrations across state/provincial capital cities in India - {chart_date_subtitle}"
+        "PM2.5 concentrations across state/provincial capital cities in India ",
+        "- {chart_date_subtitle}"
       ),
       subtitle = "* indicates NCAP cities",
       x = "",
@@ -922,20 +933,17 @@ analysis <- function(
     scale = 1
   )
 
+
   measurements_5_cities_summary <- measurements_preset_ncap_summary %>%
     filter(location_id %in% names(top5_populous_cities)) %>%
     select(location_id, city_name, mean) %>%
     left_join(measurements_grap, by = c("location_id")) %>%
-    left_join(monthly_cities_compliance, by = c("location_id")) %>%
-    mutate(
-      month = lubridate::month(focus_month),
-      year = focus_year
-    )
+    left_join(monthly_cities_compliance, by = c("location_id"))
 
   measurements_5_cities_summary_previous <- measurements_previous_years_summary %>%
     filter(location_id %in% names(top5_populous_cities)) %>%
-    select(location_id, city_name, month, year, mean) %>%
-    left_join(measurements_previous_years_grap, by = c("location_id", "month", "year")) %>%
+    select(location_id, city_name, year, mean) %>%
+    left_join(measurements_previous_years_grap, by = c("location_id", "year")) %>%
     left_join(monthly_cities_compliance_previous_years, by = c("location_id", "year"))
 
   measurements_5_cities_summary_all <- bind_rows(
