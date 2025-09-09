@@ -124,7 +124,6 @@ analysis <- function(
       by = c("name", "pass_who_cut")
     ) %>%
     replace_na(list(value = 0))
-  browser()
 
   # NAAQS & WHO compliance plot ----
   ## NAAQS ----
@@ -896,7 +895,8 @@ analysis <- function(
     ) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
-      legend.position = "none"
+      legend.position = "none",
+      text = element_text(family = "Source Sans Pro")
     ) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
@@ -947,7 +947,8 @@ analysis <- function(
     theme(
       legend.position = "bottom",
       legend.direction = "horizontal",
-      legend.title = element_blank()
+      legend.title = element_blank(),
+      text = element_text(family = "Source Sans Pro")
     )
   rcrea::quicksave(
     file.path(get_dir("output"), "igp_cities_grap_distribution.png"),
@@ -997,8 +998,6 @@ analysis <- function(
       row_dim <- n_rows
       layout_dims <- c(col_dim, row_dim)
 
-
-
       plot_data <- measurements_5_cities_all %>%
         filter(city_name == city)
       plot_pm25(
@@ -1011,7 +1010,6 @@ analysis <- function(
         file_name = file.path(get_dir("output"), paste0("pm25_calendar_", city, ".png"))
       )
     })
-
   } else if (focus_period_mode == "half_year") {
     sapply(measurements_top10_polluted_cities %>% distinct(city_name) %>% pull, function(city) {
       n_years <- 1
