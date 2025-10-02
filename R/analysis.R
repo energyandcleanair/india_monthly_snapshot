@@ -499,7 +499,7 @@ analysis <- function(
     rcrea::theme_crea_new() +
     labs(
       title = glue(
-        "Top 10 most cleanest cities in India by PM2.5 concentration - {chart_date_subtitle}",
+        "Top 10 cleanest cities in India by PM2.5 concentration - {chart_date_subtitle}",
       ),
       subtitle = "* indicates NCAP cities",
       x = "",
