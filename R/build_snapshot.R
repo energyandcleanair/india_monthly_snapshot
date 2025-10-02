@@ -51,12 +51,14 @@ build_snapshot <- function(
       gsub("^(\\d{4})-H(1|2)$", "\\1", .) %>%
       as.integer()
 
-    focus_period_start <- ymd(paste0(focus_year, "-", (focus_half_year - 1) * 6 + 1, "-01"))
-    focus_period_end <- ymd(
+    focus_period_start <- lubridate::ymd(
+      paste0(focus_year, "-", (focus_half_year - 1) * 6 + 1, "-01")
+    )
+    focus_period_end <- lubridate::ymd(
       paste0(focus_year, "-", (focus_half_year) * 6, if (focus_half_year == 1) "-30" else "-31")
     )
   } else {
-    focus_period_start <- ymd(paste0(focus_period, "-01"))
+    focus_period_start <- lubridate::ymd(paste0(focus_period, "-01"))
     focus_period_end <- lubridate::ceiling_date(focus_period_start, "month") - lubridate::days(1)
   }
 
