@@ -1,5 +1,5 @@
 
-Warnings <- R6Class( # nolint: object_name_linter.
+Warnings <- R6::R6Class( # nolint: object_name_linter.
   "Warnings",
   public = list(
     data = NULL,
