@@ -159,8 +159,7 @@ analysis <- function(
       values = c("#75b44c", "#27a59c", "#cc0000", "#990000", "#35416c", "#8cc9d0")
     ) +
     theme(
-      plot.title = element_text(hjust = 0.5, size = 10, face = "bold"),
-      text = element_text(family = "Source Sans Pro")
+      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
     )
 
   day_freq_naaqs_nonncap_plot <- ggplot(
@@ -195,8 +194,7 @@ analysis <- function(
       values = c("#75b44c", "#27a59c", "#cc0000", "#990000", "#35416c", "#8cc9d0")
     ) +
     theme(
-      plot.title = element_text(hjust = 0.5, size = 10, face = "bold"),
-      text = element_text(family = "Source Sans Pro")
+      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
     )
 
   ## WHO ----
@@ -232,8 +230,7 @@ analysis <- function(
       values = c("#75b44c", "#27a59c", "#cc0000", "#990000", "#35416c", "#8cc9d0")
     ) +
     theme(
-      plot.title = element_text(hjust = 0.5, size = 10, face = "bold"),
-      text = element_text(family = "Source Sans Pro")
+      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
     )
 
   day_freq_who_nonncap_plot <- ggplot(
@@ -271,8 +268,7 @@ analysis <- function(
     ) +
     theme(
       plot.title = element_text(hjust = 0.5, size = 10, face = "bold"),
-      legend.box.just = "center",
-      text = element_text(family = "Source Sans Pro")
+      legend.box.just = "center"
     )
 
   legend <- cowplot::get_legend(day_freq_who_nonncap_plot)
@@ -311,8 +307,7 @@ analysis <- function(
     coord_polar("y", start = 0) +
     scale_fill_manual(values = c("#35416c", "#8cc9D0")) +
     theme(
-      plot.title = element_text(hjust = 0.5, size = 10, face = "bold"),
-      text = element_text(family = "Source Sans Pro")
+      plot.title = element_text(hjust = 0.5, size = 10, face = "bold")
     )
 
   final_plot <- plot_grid(
@@ -359,8 +354,7 @@ analysis <- function(
     theme(
       legend.position = "bottom",
       legend.direction = "horizontal",
-      legend.title = element_blank(),
-      text = element_text(family = "Source Sans Pro")
+      legend.title = element_blank()
     )
   rcrea::quicksave(
     file.path(get_dir("output"), "cities_grap_distribution.png"),
@@ -456,8 +450,7 @@ analysis <- function(
     ) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
-      legend.position = "none",
-      text = element_text(family = "Source Sans Pro")
+      legend.position = "none"
     ) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
@@ -507,8 +500,7 @@ analysis <- function(
     ) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
-      legend.position = "none",
-      text = element_text(family = "Source Sans Pro")
+      legend.position = "none"
     ) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
@@ -654,8 +646,7 @@ analysis <- function(
       size = 3.5
     ) +
     theme(
-      legend.title = element_blank(),
-      text = element_text(family = "Source Sans Pro")
+      legend.title = element_blank()
     )
   rcrea::quicksave(
     file.path(get_dir("output"), "top10_polluted_cities_year-on-year.png"),
@@ -697,8 +688,7 @@ analysis <- function(
     ) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
-      legend.position = "none",
-      text = element_text(family = "Source Sans Pro")
+      legend.position = "none"
     ) +
     geom_text(aes(label = count), vjust = -0.5, size = 3)
   rcrea::quicksave(
@@ -760,8 +750,7 @@ analysis <- function(
     ) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
-      legend.position = "none",
-      text = element_text(family = "Source Sans Pro")
+      legend.position = "none"
     ) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
@@ -823,8 +812,7 @@ analysis <- function(
     ) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
-      legend.position = "none",
-      text = element_text(family = "Source Sans Pro")
+      legend.position = "none"
     ) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
@@ -895,8 +883,7 @@ analysis <- function(
     ) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
-      legend.position = "none",
-      text = element_text(family = "Source Sans Pro")
+      legend.position = "none"
     ) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
@@ -947,8 +934,7 @@ analysis <- function(
     theme(
       legend.position = "bottom",
       legend.direction = "horizontal",
-      legend.title = element_blank(),
-      text = element_text(family = "Source Sans Pro")
+      legend.title = element_blank()
     )
   rcrea::quicksave(
     file.path(get_dir("output"), "igp_cities_grap_distribution.png"),

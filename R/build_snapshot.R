@@ -5,7 +5,7 @@ build_snapshot <- function(
     focus_period = NULL,
     output_dir = "data") {
   log_info("Installing fonts")
-  sysfonts::font_add_google("Source Sans Pro", "source_sans_pro")
+  sysfonts::font_add_google("Source Sans 3", "source_sans_3")
   showtext::showtext_auto()
 
   log_info("Initialising arguments")
