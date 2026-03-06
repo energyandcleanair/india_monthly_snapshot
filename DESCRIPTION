@@ -39,6 +39,7 @@ Imports:
     logger,
     R6,
     units,
+    ggrepel,
     ggspatial,
     validate,
     openair,
