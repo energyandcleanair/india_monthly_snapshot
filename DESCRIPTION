@@ -30,7 +30,6 @@ Imports:
     readxl,
     grid,
     gridExtra,
-    ggrepel (== 0.9.6),
     directlabels,
     cowplot,
     openxlsx,
@@ -50,6 +49,7 @@ Remotes:
     energyandcleanair/creahelpers,
     energyandcleanair/rcrea,
     TickleThePanda/openair@calendar-plot-date-cex-arg
+    ggrepel = url::https://packagemanager.posit.co/cran/latest/src/contrib/Archive/ggrepel/ggrepel_0.9.6.tar.gz
 RoxygenNote: 7.3.2
 Suggests:
     testthat,
