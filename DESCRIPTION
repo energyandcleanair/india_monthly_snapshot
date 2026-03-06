@@ -30,7 +30,7 @@ Imports:
     readxl,
     grid,
     gridExtra,
-    ggrepel,
+    ggrepel (< 0.9.7),
     directlabels,
     cowplot,
     openxlsx,
