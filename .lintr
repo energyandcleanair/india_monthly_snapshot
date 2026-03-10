@@ -4,4 +4,4 @@ linters: linters_with_defaults(
     return_linter = NULL,
     object_usage_linter = NULL,
     pipe_consistency_linter = lintr::pipe_consistency_linter(style = "magrittr")
-)
+  )
