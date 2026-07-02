@@ -15,6 +15,10 @@ analysis <- function(
   measurements_previous_years <- city_measurements_previous_years %>%
     mutate(year = lubridate::year(date), month = lubridate::month(date))
 
+  write_measurement_completion_diagnostics(
+    chart_date_subtitle = chart_date_subtitle
+  )
+
   measurements_preset_ncap <- measurements %>%
     left_join(
       location_presets %>% filter(name == "ncap_cities"),
