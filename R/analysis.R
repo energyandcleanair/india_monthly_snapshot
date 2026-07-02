@@ -601,20 +601,20 @@ analysis <- function(
   )
 
 
+  top10_polluted_city_labels <- measurements_top10_polluted_cities %>%
+    rename(gadm1_name = `State/UT`) %>%
+    add_city_display_labels(ncap_column = "name") %>%
+    select(location_id, city_label)
+
   # Top 10 polluted cities year-on-year plot ----
   p <- ggplot(
     bind_rows(
       measurements_top10_polluted_cities %>% mutate(year = focus_year),
       measurements_10_polluted_cities_previous
     ) %>%
-      mutate(
-        city_name = case_when(
-          name == "ncap_cities" ~ paste0(city_name, ",\n", `State/UT`, "*"),
-          TRUE ~ paste0(city_name, ",\n", `State/UT`)
-        )
-      ),
+      left_join(top10_polluted_city_labels, by = "location_id"),
     aes(
-      x = factor(city_name, levels = unique(city_name)),
+      x = factor(location_id, levels = cities_prev),
       y = mean,
       fill = factor(year, levels = c(
         focus_year,
@@ -634,6 +634,10 @@ analysis <- function(
       x = "",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
+    ggplot2::scale_x_discrete(labels = setNames(
+      top10_polluted_city_labels$city_label,
+      top10_polluted_city_labels$location_id
+    )) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
@@ -655,26 +659,15 @@ analysis <- function(
   )
 
 
-  measurements_preset_ncap_top10_count <- measurements_preset_ncap %>%
-    group_by(date, pollutant, pollutant_name) %>%
-    slice_max(n = 10, order_by = value) %>%
-    ungroup() %>%
-    mutate(
-      city_name = case_when(
-        city_name == "Aurangabad" ~ paste0(city_name, ", ", gadm1_name),
-        TRUE ~ city_name
-      )
-    ) %>%
-    group_by(location_id, city_name) %>%
-    summarise(count = n()) %>%
-    arrange(desc(count)) %>%
-    ungroup
+  measurements_preset_ncap_top10_count <- summarise_top_polluted_city_frequency(
+    measurements_preset_ncap
+  )
 
 
   # Top 10 polluted cities frequency plot ----
   p <- ggplot(
     measurements_preset_ncap_top10_count,
-    aes(x = factor(city_name, levels = city_name), y = count, fill = count)
+    aes(x = factor(location_id, levels = location_id), y = count, fill = count)
   ) +
     geom_col() +
     rcrea::scale_fill_crea_c() +
@@ -686,6 +679,10 @@ analysis <- function(
       x = "",
       y = "Frequency"
     ) +
+    ggplot2::scale_x_discrete(labels = setNames(
+      measurements_preset_ncap_top10_count$city_label,
+      measurements_preset_ncap_top10_count$location_id
+    )) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
       legend.position = "none"

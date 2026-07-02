@@ -11,6 +11,7 @@ ENV PKG_SYSREQS_RSPM_URL=https://packagemanager.posit.co
 ENV PKG_CACHE_DIR=/workspaces/.cache/pak
 ENV PKG_PACKAGE_CACHE_DIR=/workspaces/.cache/pak/packages
 ENV PKG_METADATA_CACHE_DIR=/workspaces/.cache/pak/metadata
+ENV TMPDIR=/workspaces/.tmp
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bubblewrap \
@@ -36,9 +37,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /workspaces && \
+RUN mkdir -p /workspaces && \
     chown rstudio:rstudio /workspaces && \
     chmod 755 /workspaces
+
+RUN mkdir -p $TMPDIR && \
+    chown rstudio:rstudio $TMPDIR && \
+    chmod 1777 $TMPDIR
 
 USER rstudio
 

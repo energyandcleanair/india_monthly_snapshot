@@ -10,11 +10,10 @@
   "remoteUser": "rstudio",
 
   "containerEnv": {
-    "R_LIBS_USER": "${containerWorkspaceFolder}/.r-lib",
-    "TMPDIR": "${containerWorkspaceFolder}/.tmp"
+    "R_LIBS_USER": "${containerWorkspaceFolder}/.r-lib"
   },
   "initializeCommand": "mkdir -p \"$HOME/.codex\"",
-  "postCreateCommand": "mkdir -p .r-lib .tmp /workspaces/.cache/pak/packages /workspaces/.cache/pak/metadata",
+  "postCreateCommand": "mkdir -p .r-lib /workspaces/.cache/pak/packages /workspaces/.cache/pak/metadata",
 
   "customizations": {
     "vscode": {
