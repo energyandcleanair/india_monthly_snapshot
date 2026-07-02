@@ -1,2 +1,7 @@
 output
 data
+
+.r-lib/
+.r-lib:/
+.tmp
+

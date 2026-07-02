@@ -45,7 +45,8 @@ Imports:
     openair,
     ggtext,
     zip,
-    curl
+    curl,
+    jsonlite
 Remotes:
     energyandcleanair/creahelpers,
     energyandcleanair/rcrea,

@@ -1,0 +1,40 @@
+{
+  "name": "India monthly snapshots R",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "PPM_DISTRO": "noble"
+    }
+  },
+
+  "remoteUser": "rstudio",
+
+  "containerEnv": {
+    "R_LIBS_USER": "${containerWorkspaceFolder}/.r-lib",
+    "TMPDIR": "${containerWorkspaceFolder}/.tmp"
+  },
+  "initializeCommand": "mkdir -p \"$HOME/.codex\"",
+  "postCreateCommand": "mkdir -p .r-lib .tmp /workspaces/.cache/pak/packages /workspaces/.cache/pak/metadata",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "REditorSupport.r",
+        "RDebugger.r-debugger",
+        "ms-toolsai.datawrangler",
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "mechatroner.rainbow-csv"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/home/rstudio/.local/share/datawrangler-venv/bin/python",
+        "r.sessionWatcher": true,
+        "r.plot.useHttpgd": true,
+        "r.lsp.enabled": true
+      }
+    }
+  },
+  "mounts": [
+    "source=${localEnv:HOME}/.codex,target=/home/rstudio/.codex,type=bind,consistency=cached"
+  ]
+}
