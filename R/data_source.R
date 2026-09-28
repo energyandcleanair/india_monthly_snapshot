@@ -25,7 +25,8 @@ fetch_city_measurements_for_india <- function(
       validate(
         columns = measurement_columns,
         rules = measurement_rules + city_measurement_rules
-      )
+      ) %>%
+      normalise_city_measurements()
   )
 }
 
@@ -57,7 +58,8 @@ fetch_station_measurements_for_india <- function(
       validate(
         columns = measurement_columns,
         rules = measurement_rules + station_measurement_rules
-      )
+      ) %>%
+      normalise_city_ids()
   )
 }
 
@@ -74,7 +76,8 @@ fetch_current_stations_for_india <- function(..., use_cache = TRUE) {
       validate(
         columns = station_columns,
         rules = station_rules
-      )
+      ) %>%
+      normalise_city_ids()
   )
 }
 
@@ -89,7 +92,8 @@ fetch_previous_stations_for_india <- function(year_month, ..., use_cache = TRUE)
       validate(
         columns = station_columns,
         rules = station_rules
-      )
+      ) %>%
+      normalise_city_ids()
   )
 }
 
@@ -107,7 +111,8 @@ fetch_location_presets_for_india <- function(year_month, ..., use_cache = TRUE) 
           is.character(name),
           is.character(location_id)
         )
-      )
+      ) %>%
+      normalise_city_ids()
   )
 }
 

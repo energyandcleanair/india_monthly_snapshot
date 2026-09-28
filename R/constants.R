@@ -72,7 +72,7 @@ states_capitals <- c(
   "chandigarh_ind.6_1_in" = "Chandigarh",
   "Shimla",
   "Ranchi",
-  "bangalore_ind.16_1_in" = "Bangalore",
+  "bengaluru_ind.16_1_in" = "Bengaluru",
   "thiruvananthapuram_ind.17_1_in" = "Thiruvananthapuram",
   "bhopal_ind.19_1_in" = "Bhopal",
   "mumbai_ind.20_1_in" = "Mumbai",
@@ -104,7 +104,7 @@ states_capitals <- c(
 igp_cities_million <- c(
   "agra_ind.34_1_in" = "Agra",
   "amritsar_ind.28_1_in" = "Amritsar",
-  "asanol_ind.36_1_in" = "Asanol",
+  "asansol_ind.36_1_in" = "Asansol",
   "bareilly_ind.34_1_in" = "Bareilly",
   "chandigarh_ind.6_1_in" = "Chandigarh",
   "dehradun_ind.35_1_in" = "Dehradun",
@@ -118,7 +118,7 @@ igp_cities_million <- c(
   "lucknow_ind.34_1_in" = "Lucknow",
   "ludhiana_ind.28_1_in" = "Ludhiana",
   "meerut_ind.34_1_in" = "Meerut",
-  "muradabad_ind.34_1_in" = "Muradabad",
+  "moradabad_ind.34_1_in" = "Moradabad",
   "patna_ind.5_1_in" = "Patna",
   "prayagraj_ind.34_1_in" = "Prayagraj",
   "siliguri_ind.36_1_in" = "Siliguri",
@@ -139,6 +139,6 @@ top5_populous_cities <- c(
   "delhi_ind.25_1_in" = "Delhi",
   "mumbai_ind.20_1_in" = "Mumbai",
   "kolkata_ind.36_1_in" = "Kolkata",
-  "bangalore_ind.16_1_in" = "Bangalore",
+  "bengaluru_ind.16_1_in" = "Bengaluru",
   "chennai_ind.31_1_in" = "Chennai"
 )
