@@ -95,3 +95,41 @@ percent_categoriser <- function(percent_complete) {
     .default = ">80% data"
   )
 }
+
+#' How each station's reporting changed since the previous period, from its data
+#'
+#' `change` follows the API's live/inactive flag at run time, which flips on short gaps.
+#' `coverage_change` compares the share of days with data (at least 1%) in both periods:
+#' "New" (not in the previous station list), "Reactivated", "Removed" (no data this
+#' period after some the last), "No change" (data in both) or "No data" (in neither).
+#'
+#' @param statuses from get_statuses_of_stations()
+#' @param previous_station_ids stations listed at the previous run
+#' @param previous_history station measurements of the previous period
+#' @param previous_days days in the previous period
+get_coverage_changes <- function(
+    ...,
+    statuses,
+    previous_station_ids,
+    previous_history,
+    previous_days) {
+  previous <- previous_history %>%
+    group_by(location_id) %>%
+    summarise(previous_percent_complete = n() / previous_days)
+
+  statuses %>%
+    left_join(previous, by = c("id" = "location_id")) %>%
+    mutate(
+      previous_percent_complete = replace_na(previous_percent_complete, 0),
+      had_data = percent_categoriser(previous_percent_complete) != "No data",
+      has_data = percent_categoriser(percent_complete) != "No data",
+      coverage_change = case_when(
+        had_data & has_data ~ "No change",
+        had_data ~ "Removed",
+        has_data & !(id %in% previous_station_ids) ~ "New",
+        has_data ~ "Reactivated",
+        .default = "No data"
+      )
+    ) %>%
+    select(-had_data, -has_data)
+}

@@ -564,3 +564,29 @@ describe("get_statuses_of_stations", {
     })
   })
 })
+
+describe("get_coverage_changes", {
+  statuses <- tibble::tibble(
+    id = c("steady", "gap", "back", "fresh", "silent", "unknown"),
+    percent_complete = c(1, 0, 0.5, 0.9, 0, 0.3)
+  )
+  previous_history <- dplyr::bind_rows(
+    station_history_builder("steady", 1),
+    station_history_builder("gap", 0.9),
+    station_history_builder("back", 0)
+  )
+
+  it("compares the share of days with data in both periods", {
+    changes <- indiasnapshots:::get_coverage_changes(
+      statuses = statuses,
+      previous_station_ids = c("steady", "gap", "back", "silent"),
+      previous_history = previous_history,
+      previous_days = days_in_analysis
+    )
+    expect_equal(
+      changes$coverage_change,
+      c("No change", "Removed", "Reactivated", "New", "No data", "New")
+    )
+    expect_equal(changes$previous_percent_complete, c(1, 27 / 31, 0, 0, 0, 0), tolerance = 0.001)
+  })
+})

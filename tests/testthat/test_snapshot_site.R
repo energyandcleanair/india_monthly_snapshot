@@ -37,7 +37,9 @@ make_edition <- function(period = "2026-08") {
       city_name = c("Delhi", "Delhi", "Agra", "Pune", "New Town"),
       change = c("No change", "No change", "Removed this month", "Reactivated", "New"),
       percent_complete = c(1, 0.5, 0, 0.9, 0.3),
-      percent_category = c(">80% data", "<80% data", "No data", ">80% data", "<80% data")
+      percent_category = c(">80% data", "<80% data", "No data", ">80% data", "<80% data"),
+      previous_percent_complete = c(1, 0.5, 0.9, 0, 0),
+      coverage_change = c("No change", "No change", "Removed", "Reactivated", "New")
     ),
     output("statuses.csv"),
     row.names = FALSE
@@ -104,8 +106,19 @@ test_that("coverage counts stations and cities by share of days with data", {
   expect_equal(groups$non_ncap$total, 2L)
 
   expect_equal(as.character(coverage$changes$new), "Station 5")
+  expect_equal(as.character(coverage$changes$reactivated), "Station 4")
   expect_equal(as.character(coverage$changes$removed), "Station 3")
-  expect_equal(as.character(coverage$changes$new_cities), "New Town")
+  expect_equal(as.character(coverage$changes$new_cities), c("New Town", "Pune"))
+})
+
+test_that("editions without coverage_change get no changes", {
+  output_dir <- make_edition()
+  statuses_file <- file.path(output_dir, "2026-08", "output", "statuses.csv")
+  statuses <- read.csv(statuses_file)
+  write.csv(statuses[, setdiff(names(statuses), "coverage_change")], statuses_file)
+  coverage <- snapshot_site_catalog(file.path(output_dir, "2026-08"))$coverage
+  expect_length(coverage$groups, 4)
+  expect_null(coverage$changes)
 })
 
 test_that("latest.json follows monthly editions only", {

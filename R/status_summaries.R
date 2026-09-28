@@ -17,6 +17,9 @@ summarise_station_and_city_statuses <- function(
     }
     key_stats <<- paste0(key_stats, "- ", stat, ": ", value, "\n")
   }
+  add_info <- function(info) {
+    key_stats <<- paste0(key_stats, info, "\n\n")
+  }
   add_warning <- function(warning) {
     key_stats <<- paste0(key_stats, "*", warning, "*\n")
   }
@@ -86,6 +89,29 @@ summarise_station_and_city_statuses <- function(
       filter(change == "Removed this month")
     add_stat("Removed stations", paste(removed_stations$name, collapse = ", "))
   })
+
+  if ("coverage_change" %in% names(station_statuses)) {
+    add_header("Changes in data coverage")
+    add_info(paste(
+      "From the share of days with data (at least 1%) this period and the previous one.",
+      "The changes above follow the stations' live/inactive flag at run time instead."
+    ))
+    local({
+      labels <- c(
+        New = "New stations with data",
+        Reactivated = "Stations with data again",
+        Removed = "Stations without data"
+      )
+      for (kind in names(labels)) {
+        stations <- station_statuses$name[station_statuses$coverage_change == kind]
+        add_stat(labels[[kind]], paste(stations, collapse = ", "))
+      }
+      add_stat(
+        "Cities with data after none the previous period",
+        paste(cities_with_new_data(station_statuses), collapse = ", ")
+      )
+    })
+  }
 
   add_header("Changes in Cities")
   local({
@@ -181,4 +207,17 @@ summarise_station_and_city_statuses <- function(
 
 
   return(key_stats)
+}
+
+#' Cities whose stations had no data in the previous period and have some now
+cities_with_new_data <- function(station_statuses) {
+  station_statuses %>%
+    group_by(city_name) %>%
+    summarise(
+      had_data = any(percent_categoriser(previous_percent_complete) != "No data"),
+      has_data = any(percent_categoriser(percent_complete) != "No data")
+    ) %>%
+    filter(has_data, !had_data) %>%
+    pull(city_name) %>%
+    sort()
 }
