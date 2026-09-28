@@ -1,9 +1,17 @@
 log_threshold(DEBUG)
 
+#' Build the snapshot of one month (YYYY-MM) or half-year (YYYY-Hn)
+#'
+#' @param focus_period defaults to last month
+#' @param output_dir the edition is written to <output_dir>/<focus_period>
+#' @param update_latest point <output_dir>/latest.json at this edition; by default only
+#'   for the scheduled run (no focus_period), so rerunning a past month leaves it alone
 #' @export
 build_snapshot <- function(
     focus_period = NULL,
-    output_dir = "data") {
+    output_dir = "data",
+    update_latest = is.null(focus_period)) {
+  force(update_latest)
   log_info("Installing fonts")
   sysfonts::font_add_google("Source Sans 3", "source_sans_3")
   showtext::showtext_auto()
@@ -119,6 +127,16 @@ build_snapshot <- function(
   write.csv(
     overshooting_data,
     file.path(get_dir("output"), "overshooting.csv"),
+    row.names = FALSE
+  )
+
+  write.csv(
+    bind_rows(
+      snapshot_input("City PM2.5 (CPCB)", city_measurements_raw$date),
+      snapshot_input("Station PM2.5 (CPCB)", station_measurements$date),
+      snapshot_input("Days above annual standards", overshooting_data$date)
+    ),
+    file.path(get_dir("month"), "data_summary.csv"),
     row.names = FALSE
   )
 
@@ -253,6 +271,12 @@ build_snapshot <- function(
     warnings$get_warnings(),
     file.path(get_dir("output"), "warnings.csv"),
     row.names = FALSE
+  )
+
+  build_snapshot_site(
+    output_dir = output_dir,
+    period = focus_period,
+    update_latest = update_latest
   )
 
   log_info("Create a zip of the output directory")
