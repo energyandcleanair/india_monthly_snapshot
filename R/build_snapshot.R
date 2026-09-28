@@ -8,9 +8,10 @@ log_threshold(DEBUG)
 #'   for the scheduled run (no focus_period), so rerunning a past month leaves it alone
 #' @export
 build_snapshot <- function(
-    focus_period = NULL,
-    output_dir = "data",
-    update_latest = is.null(focus_period)) {
+  focus_period = NULL,
+  output_dir = "data",
+  update_latest = is.null(focus_period)
+) {
   force(update_latest)
   log_info("Installing fonts")
   sysfonts::font_add_google("Source Sans 3", "source_sans_3")

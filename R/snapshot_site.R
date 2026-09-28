@@ -44,12 +44,13 @@ save_snapshot_chart <- function(file, plot, ..., data = NULL, data_through = NUL
 }
 
 write_chart_companions <- function(
-    ...,
-    file,
-    plot = NULL,
-    data = NULL,
-    data_through = NULL,
-    title = NULL) {
+  ...,
+  file,
+  plot = NULL,
+  data = NULL,
+  data_through = NULL,
+  title = NULL
+) {
   if (!is.null(data)) {
     write.csv(ungroup(data), companion_path(file, "csv"), row.names = FALSE)
   }

@@ -108,11 +108,12 @@ percent_categoriser <- function(percent_complete) {
 #' @param previous_history station measurements of the previous period
 #' @param previous_days days in the previous period
 get_coverage_changes <- function(
-    ...,
-    statuses,
-    previous_station_ids,
-    previous_history,
-    previous_days) {
+  ...,
+  statuses,
+  previous_station_ids,
+  previous_history,
+  previous_days
+) {
   previous <- previous_history %>%
     group_by(location_id) %>%
     summarise(previous_percent_complete = n() / previous_days)

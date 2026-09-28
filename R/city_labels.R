@@ -47,9 +47,10 @@ abbreviate_state_name <- function(state_name) {
 }
 
 add_city_display_labels <- function(
-    data,
-    state_column = "gadm1_name",
-    ncap_column = NULL) {
+  data,
+  state_column = "gadm1_name",
+  ncap_column = NULL
+) {
   city_label_states <- data %>%
     distinct(location_id, city_name, .data[[state_column]]) %>%
     group_by(city_name) %>%
