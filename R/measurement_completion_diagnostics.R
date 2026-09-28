@@ -174,7 +174,10 @@ write_measurement_completion_diagnostics <- function(...) {
     rcrea::theme_crea_new() +
     labs(
       title = "Monthly city PM2.5 data completion",
-      subtitle = glue("{length(unique(measurement_completion_monthly$location_id))} locations across cached measurement files"),
+      subtitle = glue(
+        "{length(unique(measurement_completion_monthly$location_id))} locations ",
+        "across cached measurement files"
+      ),
       x = "",
       y = "",
       fill = "% days"
@@ -216,7 +219,10 @@ write_measurement_completion_diagnostics <- function(...) {
       rcrea::theme_crea_new() +
       labs(
         title = "Locations with 80% or lower mean PM2.5 data completion",
-        subtitle = glue("{nrow(period_under_80_locations)} locations; rows ordered by mean completion across cached months"),
+        subtitle = glue(
+          "{nrow(period_under_80_locations)} locations; ",
+          "rows ordered by mean completion across cached months"
+        ),
         x = "",
         y = "",
         fill = "% days"

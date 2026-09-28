@@ -56,4 +56,5 @@ RoxygenNote: 7.3.2
 Suggests:
     testthat,
     mockery,
-    waldo
+    waldo,
+    withr

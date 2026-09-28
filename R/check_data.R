@@ -1,11 +1,12 @@
 
 check_data <- function(
-    ...,
-    warnings,
-    city_measurements,
-    station_measurements,
-    location_presets,
-    day_threshold) {
+  ...,
+  warnings,
+  city_measurements,
+  station_measurements,
+  location_presets,
+  day_threshold
+) {
   log_debug("Checking number of cities doesn't exceed the limit")
   check_data_city_limits(
     city_measurements = city_measurements,

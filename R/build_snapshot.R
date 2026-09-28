@@ -1,9 +1,18 @@
 log_threshold(DEBUG)
 
+#' Build the snapshot of one month (YYYY-MM) or half-year (YYYY-Hn)
+#'
+#' @param focus_period defaults to last month
+#' @param output_dir the edition is written to <output_dir>/<focus_period>
+#' @param update_latest point <output_dir>/latest.json at this edition; by default only
+#'   for the scheduled run (no focus_period), so rerunning a past month leaves it alone
 #' @export
 build_snapshot <- function(
-    focus_period = NULL,
-    output_dir = "data") {
+  focus_period = NULL,
+  output_dir = "data",
+  update_latest = is.null(focus_period)
+) {
+  force(update_latest)
   log_info("Installing fonts")
   sysfonts::font_add_google("Source Sans 3", "source_sans_3")
   showtext::showtext_auto()
@@ -122,6 +131,16 @@ build_snapshot <- function(
     row.names = FALSE
   )
 
+  write.csv(
+    bind_rows(
+      snapshot_input("City PM2.5 (CPCB)", city_measurements_raw$date),
+      snapshot_input("Station PM2.5 (CPCB)", station_measurements$date),
+      snapshot_input("Days above annual standards", overshooting_data$date)
+    ),
+    file.path(get_dir("month"), "data_summary.csv"),
+    row.names = FALSE
+  )
+
   # Check the data
   log_info("Checking data")
   days_in_analysis <- as.integer(focus_period_end - focus_period_start + 1)
@@ -160,7 +179,25 @@ build_snapshot <- function(
       )
     }
 
-    return(station_status)
+    log_debug("Fetching station measurements of the previous period")
+    previous_period_start <- seq(
+      focus_period_start,
+      by = if (focus_period_mode == "half_year") "-6 months" else "-1 month",
+      length.out = 2
+    )[2]
+    previous_period_end <- focus_period_start - lubridate::days(1)
+    previous_station_measurements <- fetch_station_measurements_for_india(
+      start_date = previous_period_start,
+      end_date = previous_period_end,
+      cache_name = "measurements_stations_previous.csv"
+    )
+
+    get_coverage_changes(
+      statuses = station_status,
+      previous_station_ids = stations_previous$id,
+      previous_history = previous_station_measurements,
+      previous_days = as.integer(previous_period_end - previous_period_start + 1)
+    )
   })
 
   # You can add warnings to the warnings tibble to be written to the CSV at the end
@@ -253,6 +290,12 @@ build_snapshot <- function(
     warnings$get_warnings(),
     file.path(get_dir("output"), "warnings.csv"),
     row.names = FALSE
+  )
+
+  build_snapshot_site(
+    output_dir = output_dir,
+    period = focus_period,
+    update_latest = update_latest
   )
 
   log_info("Create a zip of the output directory")
