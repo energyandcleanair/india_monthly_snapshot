@@ -75,15 +75,15 @@ summarise_station_and_city_statuses <- function(
   add_header("Changes in Stations")
   local({
     new_stations <- station_statuses %>%
-      filter(status == "New")
+      filter(change == "New")
     add_stat("New stations", paste(new_stations$name, collapse = ", "))
 
     reactivated_stations <- station_statuses %>%
-      filter(status == "Reactivated")
+      filter(change == "Reactivated")
     add_stat("Reactivated stations", paste(reactivated_stations$name, collapse = ", "))
 
     removed_stations <- station_statuses %>%
-      filter(status == "Removed this month")
+      filter(change == "Removed this month")
     add_stat("Removed stations", paste(removed_stations$name, collapse = ", "))
   })
 
@@ -91,10 +91,10 @@ summarise_station_and_city_statuses <- function(
   local({
     # Find cities which didn't have stations before that have new stations now
     previous_month_stations <- station_statuses %>%
-      filter(status != "New")
+      filter(change != "New")
 
     new_city_ids <- station_statuses %>%
-      filter(status == "New") %>%
+      filter(change == "New") %>%
       filter(!(city_id %in% previous_month_stations$city_id)) %>%
       pull(city_id)
 
