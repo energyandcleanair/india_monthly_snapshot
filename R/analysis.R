@@ -1,15 +1,16 @@
 analysis <- function(
-    ...,
-    cities,
-    city_measurements,
-    city_measurements_previous_years,
-    station_measurements,
-    location_presets,
-    chart_date_subtitle,
-    focus_year,
-    focus_period_mode,
-    days_in_analysis,
-    warnings) {
+  ...,
+  cities,
+  city_measurements,
+  city_measurements_previous_years,
+  station_measurements,
+  location_presets,
+  chart_date_subtitle,
+  focus_year,
+  focus_period_mode,
+  days_in_analysis,
+  warnings
+) {
   measurements <- city_measurements %>%
     mutate(year = lubridate::year(date), month = lubridate::month(date))
   data_through <- max(city_measurements$date)
@@ -1143,14 +1144,15 @@ pass_count <- function(df) {
 #' @return export a png with file_name
 #' @export
 plot_pm25 <- function(
-    ...,
-    city_name,
-    data,
-    year_range,
-    month_range,
-    layout_dims,
-    file_name,
-    value) {
+  ...,
+  city_name,
+  data,
+  year_range,
+  month_range,
+  layout_dims,
+  file_name,
+  value
+) {
   plot <- openair::calendarPlot(
     data,
     pollutant = value,

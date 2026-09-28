@@ -1,27 +1,33 @@
 summarise_station_and_city_statuses <- function(
-    ...,
-    station_statuses,
-    location_presets,
-    warnings) {
-  key_stats <- ""
+  ...,
+  station_statuses,
+  location_presets,
+  warnings
+) {
+  # the text is kept in an environment, so the helpers can append to it
+  summary <- new.env()
+  summary$text <- ""
+  append <- function(...) {
+    summary$text <- paste0(summary$text, ...)
+  }
 
   add_header <- function(header) {
-    if (key_stats != "") {
-      key_stats <<- paste0(key_stats, "\n")
+    if (summary$text != "") {
+      append("\n")
     }
-    key_stats <<- paste0(key_stats, "## ", header, "\n\n")
+    append("## ", header, "\n\n")
   }
   add_stat <- function(stat, value) {
     if (value == "" || is.na(value) || trimws(value) == "") {
       value <- "No value"
     }
-    key_stats <<- paste0(key_stats, "- ", stat, ": ", value, "\n")
+    append("- ", stat, ": ", value, "\n")
   }
   add_info <- function(info) {
-    key_stats <<- paste0(key_stats, info, "\n\n")
+    append(info, "\n\n")
   }
   add_warning <- function(warning) {
-    key_stats <<- paste0(key_stats, "*", warning, "*\n")
+    append("*", warning, "*\n")
   }
 
   # We need these stats:
@@ -206,7 +212,7 @@ summarise_station_and_city_statuses <- function(
   })
 
 
-  return(key_stats)
+  return(summary$text)
 }
 
 #' Cities whose stations had no data in the previous period and have some now

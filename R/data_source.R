@@ -1,8 +1,9 @@
 fetch_city_measurements_for_india <- function(
-    start_date,
-    end_date,
-    ...,
-    use_cache = TRUE) {
+  start_date,
+  end_date,
+  ...,
+  use_cache = TRUE
+) {
   measurements_url <- glue(
     "https://api.energyandcleanair.org/v1/measurements",
     "?format=csv",
@@ -30,11 +31,12 @@ fetch_city_measurements_for_india <- function(
 }
 
 fetch_station_measurements_for_india <- function(
-    start_date,
-    end_date,
-    ...,
-    use_cache = TRUE,
-    cache_name = "measurements_stations.csv") {
+  start_date,
+  end_date,
+  ...,
+  use_cache = TRUE,
+  cache_name = "measurements_stations.csv"
+) {
   measurements_url <- glue(
     "https://api.energyandcleanair.org/v1/measurements",
     "?format=csv",

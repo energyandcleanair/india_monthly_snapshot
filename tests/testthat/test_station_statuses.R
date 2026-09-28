@@ -13,8 +13,9 @@ days_in_analysis <- as.integer(month_end - month_start + 1)
 #' Fills from the start date to the end date until the the last day before
 #' the percentage is reached.
 station_history_builder <- function(
-    id,
-    percentage) {
+  id,
+  percentage
+) {
   start_date <- month_start
   end_date <- month_end
 
