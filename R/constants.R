@@ -72,7 +72,7 @@ states_capitals <- c(
   "chandigarh_ind.6_1_in" = "Chandigarh",
   "Shimla",
   "Ranchi",
-  "bangalore_ind.16_1_in" = "Bangalore",
+  "bengaluru_ind.16_1_in" = "Bengaluru",
   "thiruvananthapuram_ind.17_1_in" = "Thiruvananthapuram",
   "bhopal_ind.19_1_in" = "Bhopal",
   "mumbai_ind.20_1_in" = "Mumbai",
@@ -139,6 +139,6 @@ top5_populous_cities <- c(
   "delhi_ind.25_1_in" = "Delhi",
   "mumbai_ind.20_1_in" = "Mumbai",
   "kolkata_ind.36_1_in" = "Kolkata",
-  "bangalore_ind.16_1_in" = "Bangalore",
+  "bengaluru_ind.16_1_in" = "Bengaluru",
   "chennai_ind.31_1_in" = "Chennai"
 )

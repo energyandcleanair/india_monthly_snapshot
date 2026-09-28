@@ -241,9 +241,11 @@ snapshot_site_catalog <- function(period_dir) {
   statuses_file <- file.path(output, "statuses.csv")
   presets_file <- file.path(period_dir, "cache", "location_presets.csv")
   coverage <- if (file.exists(statuses_file) && file.exists(presets_file)) {
+    # the cache holds the API's raw IDs
+    read <- function(file) normalise_city_ids(utils::read.csv(file, stringsAsFactors = FALSE))
     snapshot_coverage(
-      station_statuses = utils::read.csv(statuses_file, stringsAsFactors = FALSE),
-      location_presets = utils::read.csv(presets_file, stringsAsFactors = FALSE)
+      station_statuses = read(statuses_file),
+      location_presets = read(presets_file)
     )
   }
 
