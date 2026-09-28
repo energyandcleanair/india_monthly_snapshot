@@ -174,24 +174,22 @@ snapshot_coverage <- function(station_statuses, location_presets) {
     by_category(cities$percent_category[!in_ncap])
   )
 
-  # "New" is a change, not a status
-  names_with <- function(change) {
-    I(sort(station_statuses$name[station_statuses$change %in% change]))
+  # from the data, not the API's live/inactive flag (see get_coverage_changes())
+  changes <- if ("coverage_change" %in% names(station_statuses)) {
+    names_with <- function(change) {
+      I(sort(station_statuses$name[station_statuses$coverage_change == change]))
+    }
+    list(
+      new = names_with("New"),
+      reactivated = names_with("Reactivated"),
+      removed = names_with("Removed"),
+      new_cities = I(cities_with_new_data(station_statuses))
+    )
   }
-  earlier <- station_statuses$city_id[station_statuses$change != "New"]
-  new_cities <- station_statuses %>%
-    filter(change == "New", !(city_id %in% earlier)) %>%
-    distinct(city_name) %>%
-    pull(city_name)
 
   list(
     groups = Map(function(g, n) c(as.list(g), n), groups, counts),
-    changes = list(
-      new = names_with("New"),
-      reactivated = names_with("Reactivated"),
-      removed = names_with("Removed this month"),
-      new_cities = I(sort(new_cities))
-    )
+    changes = changes
   )
 }
 

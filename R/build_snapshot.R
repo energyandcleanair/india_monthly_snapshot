@@ -178,7 +178,25 @@ build_snapshot <- function(
       )
     }
 
-    return(station_status)
+    log_debug("Fetching station measurements of the previous period")
+    previous_period_start <- seq(
+      focus_period_start,
+      by = if (focus_period_mode == "half_year") "-6 months" else "-1 month",
+      length.out = 2
+    )[2]
+    previous_period_end <- focus_period_start - lubridate::days(1)
+    previous_station_measurements <- fetch_station_measurements_for_india(
+      start_date = previous_period_start,
+      end_date = previous_period_end,
+      cache_name = "measurements_stations_previous.csv"
+    )
+
+    get_coverage_changes(
+      statuses = station_status,
+      previous_station_ids = stations_previous$id,
+      previous_history = previous_station_measurements,
+      previous_days = as.integer(previous_period_end - previous_period_start + 1)
+    )
   })
 
   # You can add warnings to the warnings tibble to be written to the CSV at the end
