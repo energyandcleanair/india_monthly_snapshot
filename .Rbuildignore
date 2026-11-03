@@ -1,0 +1,7 @@
+^\.agents($|/)
+^\.codex($|/)
+^\.devcontainer($|/)
+^\.github($|/)
+^\.r-lib($|/)
+^\.r-lib:($|/)
+^\.tmp($|/)

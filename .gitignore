@@ -1,2 +1,10 @@
 output
 data
+
+.r-lib/
+.r-lib:/
+.tmp
+
+Rplots.pdf
+.vscode/
+

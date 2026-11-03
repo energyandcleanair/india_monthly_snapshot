@@ -1,19 +1,25 @@
 analysis <- function(
-    ...,
-    cities,
-    city_measurements,
-    city_measurements_previous_years,
-    station_measurements,
-    location_presets,
-    chart_date_subtitle,
-    focus_year,
-    focus_period_mode,
-    days_in_analysis,
-    warnings) {
+  ...,
+  cities,
+  city_measurements,
+  city_measurements_previous_years,
+  station_measurements,
+  location_presets,
+  chart_date_subtitle,
+  focus_year,
+  focus_period_mode,
+  days_in_analysis,
+  warnings
+) {
   measurements <- city_measurements %>%
     mutate(year = lubridate::year(date), month = lubridate::month(date))
+  data_through <- max(city_measurements$date)
   measurements_previous_years <- city_measurements_previous_years %>%
     mutate(year = lubridate::year(date), month = lubridate::month(date))
+
+  write_measurement_completion_diagnostics(
+    chart_date_subtitle = chart_date_subtitle
+  )
 
   measurements_preset_ncap <- measurements %>%
     left_join(
@@ -64,6 +70,11 @@ analysis <- function(
   write.csv(
     monthly_compliance, file.path(get_dir("output"), "monthly_compliance.csv"),
     row.names = FALSE
+  )
+  write_table_companion(
+    file.path(get_dir("output"), "monthly_compliance.csv"),
+    title = glue("Cities meeting the NAAQS and WHO standards on average - {chart_date_subtitle}"),
+    data_through = data_through
   )
 
 
@@ -315,7 +326,25 @@ analysis <- function(
     day_freq_who_nonncap_plot, legend, day_freq_who_ncap_plot,
     ncol = 3
   )
-  rcrea::quicksave(file.path(get_dir("output"), "compliance.png"), plot = final_plot)
+  days_above_labels <- c(
+    "0%" = "0%", "25%" = "0-25%", "50%" = "25-50%", "75%" = "50-75%", "99%" = "75-100%",
+    "100%" = "100%"
+  )
+  save_snapshot_chart(
+    file.path(get_dir("output"), "compliance.png"),
+    plot = final_plot,
+    data = bind_rows(
+      day_freq_naaqs_summary %>%
+        mutate(standard = "NAAQS", days_above = days_above_labels[pass_naaqs_cut]),
+      day_freq_who_summary %>%
+        mutate(standard = "WHO", days_above = days_above_labels[pass_who_cut])
+    ) %>%
+      select(standard, group = name, days_above_standard = days_above, cities = value),
+    data_through = data_through,
+    title = glue(
+      "Cities by share of days above the NAAQS and WHO PM2.5 standards - {chart_date_subtitle}"
+    )
+  )
 
   india_boundary <- sf::st_read(
     system.file(
@@ -356,10 +385,12 @@ analysis <- function(
       legend.direction = "horizontal",
       legend.title = element_blank()
     )
-  rcrea::quicksave(
+  save_snapshot_chart(
     file.path(get_dir("output"), "cities_grap_distribution.png"),
     plot = p,
-    scale = 1
+    scale = 1,
+    data_through = data_through,
+    title = glue("Cities by GRAP category of mean PM2.5 - {chart_date_subtitle}")
   )
 
   measurements_preset_ncap_province <- measurements_preset_ncap_summary %>%
@@ -393,6 +424,11 @@ analysis <- function(
       select(city_name, state_name = gadm1_name, is_ncap = name, mean, Severe, `Very Poor`, Poor,
              Moderate, Satisfactory, Good, monitored_days, pass_who, pass_naaqs),
     file.path(get_dir("output"), "all_cities_ordered.csv")
+  )
+  write_table_companion(
+    file.path(get_dir("output"), "all_cities_ordered.csv"),
+    title = glue("All cities ranked by mean PM2.5 - {chart_date_subtitle}"),
+    data_through = data_through
   )
 
   monthly_cities_compliance <- lapply(
@@ -457,7 +493,12 @@ analysis <- function(
     geom_text(aes(x = 11.25, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
     geom_text(aes(x = 11.25, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
     ggrepel::geom_text_repel(aes(label = round(mean, 0)), vjust = 1, size = 3.5)
-  rcrea::quicksave(file.path(get_dir("output"), "top10_polluted_cities.png"), plot = p, scale = 1)
+  save_snapshot_chart(
+    file.path(get_dir("output"), "top10_polluted_cities.png"),
+    plot = p,
+    scale = 1,
+    data_through = data_through
+  )
 
 
   measurements_top10_cleanest_cities <- measurements_preset_ncap_summary %>%
@@ -507,7 +548,12 @@ analysis <- function(
     geom_text(aes(x = 11.25, y = 60, label = "NAAQS"), color = "black", vjust = -0.5, hjust = 1.1) +
     geom_text(aes(x = 11.25, y = 15, label = "WHO"), color = "black", vjust = -0.5, hjust = 1.1) +
     ggrepel::geom_text_repel(aes(label = round(mean, 0)), vjust = 1, size = 3.5)
-  rcrea::quicksave(file.path(get_dir("output"), "top10_cleanest_cities.png"), plot = p, scale = 1)
+  save_snapshot_chart(
+    file.path(get_dir("output"), "top10_cleanest_cities.png"),
+    plot = p,
+    scale = 1,
+    data_through = data_through
+  )
 
 
   cities_prev <- measurements_top10_polluted_cities %>%
@@ -601,20 +647,20 @@ analysis <- function(
   )
 
 
+  top10_polluted_city_labels <- measurements_top10_polluted_cities %>%
+    rename(gadm1_name = `State/UT`) %>%
+    add_city_display_labels(ncap_column = "name") %>%
+    select(location_id, city_label)
+
   # Top 10 polluted cities year-on-year plot ----
   p <- ggplot(
     bind_rows(
       measurements_top10_polluted_cities %>% mutate(year = focus_year),
       measurements_10_polluted_cities_previous
     ) %>%
-      mutate(
-        city_name = case_when(
-          name == "ncap_cities" ~ paste0(city_name, ",\n", `State/UT`, "*"),
-          TRUE ~ paste0(city_name, ",\n", `State/UT`)
-        )
-      ),
+      left_join(top10_polluted_city_labels, by = "location_id"),
     aes(
-      x = factor(city_name, levels = unique(city_name)),
+      x = factor(location_id, levels = cities_prev),
       y = mean,
       fill = factor(year, levels = c(
         focus_year,
@@ -634,6 +680,10 @@ analysis <- function(
       x = "",
       y = "Mean PM2.5 concentration (µg/m³)"
     ) +
+    ggplot2::scale_x_discrete(labels = setNames(
+      top10_polluted_city_labels$city_label,
+      top10_polluted_city_labels$location_id
+    )) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
     geom_hline(yintercept = 60, linetype = "dashed", color = "black", alpha = 0.2) +
     geom_hline(yintercept = 15, linetype = "dashed", color = "black", alpha = 0.2) +
@@ -648,33 +698,25 @@ analysis <- function(
     theme(
       legend.title = element_blank()
     )
-  rcrea::quicksave(
+  save_snapshot_chart(
     file.path(get_dir("output"), "top10_polluted_cities_year-on-year.png"),
     plot = p,
-    scale = 1
+    scale = 1,
+    data = p$data %>%
+      select(location_id, city_name, `State/UT`, year, mean, monitored_days, `% days > NAAQS`),
+    data_through = data_through
   )
 
 
-  measurements_preset_ncap_top10_count <- measurements_preset_ncap %>%
-    group_by(date, pollutant, pollutant_name) %>%
-    slice_max(n = 10, order_by = value) %>%
-    ungroup() %>%
-    mutate(
-      city_name = case_when(
-        city_name == "Aurangabad" ~ paste0(city_name, ", ", gadm1_name),
-        TRUE ~ city_name
-      )
-    ) %>%
-    group_by(location_id, city_name) %>%
-    summarise(count = n()) %>%
-    arrange(desc(count)) %>%
-    ungroup
+  measurements_preset_ncap_top10_count <- summarise_top_polluted_city_frequency(
+    measurements_preset_ncap
+  )
 
 
   # Top 10 polluted cities frequency plot ----
   p <- ggplot(
     measurements_preset_ncap_top10_count,
-    aes(x = factor(city_name, levels = city_name), y = count, fill = count)
+    aes(x = factor(location_id, levels = location_id), y = count, fill = count)
   ) +
     geom_col() +
     rcrea::scale_fill_crea_c() +
@@ -686,15 +728,21 @@ analysis <- function(
       x = "",
       y = "Frequency"
     ) +
+    ggplot2::scale_x_discrete(labels = setNames(
+      measurements_preset_ncap_top10_count$city_label,
+      measurements_preset_ncap_top10_count$location_id
+    )) +
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
       legend.position = "none"
     ) +
     geom_text(aes(label = count), vjust = -0.5, size = 3)
-  rcrea::quicksave(
+  save_snapshot_chart(
     file.path(get_dir("output"), "top10_polluted_cities_freq.png"),
     plot = p,
-    scale = 1
+    scale = 1,
+    data = measurements_preset_ncap_top10_count,
+    data_through = data_through
   )
 
 
@@ -767,7 +815,14 @@ analysis <- function(
       hjust = 1.1
     ) +
     geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
-  rcrea::quicksave(file.path(get_dir("output"), "top_city_province.png"), plot = p, scale = 1)
+  save_snapshot_chart(
+    file.path(get_dir("output"), "top_city_province.png"),
+    plot = p,
+    scale = 1,
+    data = measurements_top_city_province %>%
+      select(`State/UT`, city_name, is_ncap = name, mean),
+    data_through = data_through
+  )
 
 
   measurements_capitals_summary <- measurements %>%
@@ -829,7 +884,14 @@ analysis <- function(
       hjust = 1.1
     ) +
     geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
-  rcrea::quicksave(file.path(get_dir("output"), "state_capitals.png"), plot = p, scale = 1)
+  save_snapshot_chart(
+    file.path(get_dir("output"), "state_capitals.png"),
+    plot = p,
+    scale = 1,
+    data = measurements_capitals_summary %>%
+      select(`State/UT`, city_name, is_ncap = name, mean),
+    data_through = data_through
+  )
 
 
   measurements_preset_igp_summary <- measurements %>%
@@ -900,10 +962,13 @@ analysis <- function(
       hjust = 1.1
     ) +
     geom_text(aes(label = round(mean, 0)), vjust = -0.5, size = 3)
-  rcrea::quicksave(
+  save_snapshot_chart(
     file.path(get_dir("output"), "igp_cities_million.png"),
     plot = p,
-    scale = 1
+    scale = 1,
+    data = measurements_preset_igp_summary %>%
+      select(city_name, `State/UT`, mean, grap_cat),
+    data_through = data_through
   )
 
 
@@ -936,10 +1001,16 @@ analysis <- function(
       legend.direction = "horizontal",
       legend.title = element_blank()
     )
-  rcrea::quicksave(
+  save_snapshot_chart(
     file.path(get_dir("output"), "igp_cities_grap_distribution.png"),
     plot = p,
-    scale = 1
+    scale = 1,
+    data = measurements_preset_igp_summary %>%
+      select(city_name, `State/UT`, latitude, longitude, mean, grap_cat),
+    data_through = data_through,
+    title = glue(
+      "GRAP category of million-plus cities in the Indo-Gangetic Plain - {chart_date_subtitle}"
+    )
   )
 
 
@@ -1073,14 +1144,15 @@ pass_count <- function(df) {
 #' @return export a png with file_name
 #' @export
 plot_pm25 <- function(
-    ...,
-    city_name,
-    data,
-    year_range,
-    month_range,
-    layout_dims,
-    file_name,
-    value) {
+  ...,
+  city_name,
+  data,
+  year_range,
+  month_range,
+  layout_dims,
+  file_name,
+  value
+) {
   plot <- openair::calendarPlot(
     data,
     pollutant = value,
@@ -1109,6 +1181,12 @@ plot_pm25 <- function(
   png(file_name, width = 1700, height = 900, res = 150)
   print(plot)
   dev.off()
+  write_chart_companions(
+    file = file_name,
+    data = data %>% select(date, city_name, value),
+    data_through = max(data$date),
+    title = paste(city_name, "daily PM2.5 concentration (µg/m³)")
+  )
 }
 
 
