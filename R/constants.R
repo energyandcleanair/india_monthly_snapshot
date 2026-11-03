@@ -1,5 +1,5 @@
-max_cities_india <- 289
-max_cities_ncap <- 131
+max_cities_india <- 300
+max_cities_ncap <- 140
 
 ncap_grouping_labels <- c(
   "ncap_cities" = "NCAP Cities",
