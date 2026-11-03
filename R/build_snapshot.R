@@ -149,7 +149,7 @@ build_snapshot <- function(
   station_statuses <- local({
     clean_stations <- function(stations) {
       # remove possessive 's from infos, avoid JSON parsing error
-      stations$infos <- gsub("(?<=[a-z])'s", "s", stations$infos, perl = TRUE) 
+      stations$infos <- gsub("(?<=[a-z])'s", "s", stations$infos, perl = TRUE)
 
       stations %>%
         unnest_json_columns("infos") %>%
