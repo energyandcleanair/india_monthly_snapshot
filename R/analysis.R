@@ -412,7 +412,7 @@ analysis <- function(
     pivot_wider(names_from = grap_cat, values_from = count, values_fill = list(count = 0)) %>%
     rowwise() %>%
     mutate(monitored_days = sum(across(any_of(c(
-      "Good", "Satisfactory", "Moderate", "Poor", "Very Poor"
+      "Good", "Satisfactory", "Moderate", "Poor", "Very Poor", "Severe"
     )))))
 
   write.csv(
@@ -421,8 +421,9 @@ analysis <- function(
       select(-c(name, pass_who, pass_naaqs)) %>%
       left_join(measurements_grap, by = "location_id") %>%
       left_join(daily_compliance, by = "location_id") %>%
-      select(city_name, state_name = gadm1_name, is_ncap = name, mean, Severe, `Very Poor`, Poor,
-             Moderate, Satisfactory, Good, monitored_days, pass_who, pass_naaqs),
+      select(city_name, state_name = gadm1_name, is_ncap = name, mean,
+             any_of(c("Severe", "Very Poor", "Poor", "Moderate", "Satisfactory", "Good")),
+             monitored_days, pass_who, pass_naaqs),
     file.path(get_dir("output"), "all_cities_ordered.csv")
   )
   write_table_companion(
