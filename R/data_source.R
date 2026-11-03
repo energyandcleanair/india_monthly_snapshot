@@ -144,7 +144,7 @@ fetch_overshooting_for_india <- function(start_date, cities) {
     tibble::as_tibble() %>%
     readr::type_convert() %>%
     filter(is_overshoot, !is_overshoot_estimated) %>%
-    select(overshoot_columns) %>%
+    select(all_of(overshoot_columns)) %>%
     mutate(target_id = overshoot_standard[target_id])
 
   return(data)
